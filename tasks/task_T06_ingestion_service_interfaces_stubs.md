@@ -1,6 +1,6 @@
 # T06: Ingestion service interfaces (stubs)
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Define `IngestionService` signatures from PRD and no-op implementation.
@@ -15,12 +15,12 @@ Define `IngestionService` signatures from PRD and no-op implementation.
 - Include docstrings describing expected behavior.
 
 ## Checklist
-- [ ] Create module and class with signatures.
-- [ ] Add TODOs for implementations.
-- [ ] Minimal unit tests check default behavior/raises.
+- [x] Create module and class with signatures.
+- [x] Add TODOs for implementations.
+- [x] Minimal unit tests check default behavior/raises.
 
 ## Acceptance criteria
-- [ ] Module imports without runtime errors.
+- [x] Module imports without runtime errors.
 
 ## Verification
 ```bash
