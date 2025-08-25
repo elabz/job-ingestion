@@ -1,6 +1,6 @@
 # T04: Basic API routing scaffold
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Create `routes.py` and include into app for future endpoints.
@@ -11,14 +11,14 @@ Create `routes.py` and include into app for future endpoints.
 - In `src/job_ingestion/api/main.py`, include router: `app.include_router(api_router)`.
 
 ## Checklist
-- [ ] Create `routes.py` with `APIRouter`.
-- [ ] Implement `/api/v1/ping` handler.
-- [ ] Wire router into `app`.
-- [ ] Add unit test `tests/unit/api/test_ping.py`.
+- [x] Create `routes.py` with `APIRouter`.
+- [x] Implement `/api/v1/ping` handler.
+- [x] Wire router into `app`.
+- [x] Add unit test `tests/unit/api/test_ping.py`.
 
 ## Acceptance criteria
-- [ ] `/health` still works.
-- [ ] `/api/v1/ping` returns 200 and expected payload.
+- [x] `/health` still works.
+- [x] `/api/v1/ping` returns 200 and expected payload.
 
 ## Verification
 ```bash

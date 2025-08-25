@@ -3,9 +3,14 @@ from typing import Any, TypeVar
 
 from fastapi import FastAPI
 
+from job_ingestion.api.routes import api_router
+
 app = FastAPI(title="Job Ingestion Service API", version="0.1.0")
 
 __all__ = ["app"]
+
+
+app.include_router(api_router)
 
 
 F = TypeVar("F", bound=Callable[..., Any])
