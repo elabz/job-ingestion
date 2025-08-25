@@ -1,6 +1,6 @@
 # T05 (supporting): Unit test for models metadata
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Add `tests/unit/storage/test_models.py` ensuring tables can be created in-memory and constraints exist.
@@ -10,10 +10,10 @@ Add `tests/unit/storage/test_models.py` ensuring tables can be created in-memory
 - Assert unique constraint on `external_id` by attempting insert duplicates.
 
 ## Checklist
-- [ ] Add test file and scenarios.
+- [x] Add test file and scenarios.
 
 ## Acceptance criteria
-- [ ] Tests pass and validate model shape.
+- [x] Tests pass and validate model shape.
 
 ## Verification
 ```bash
