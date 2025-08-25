@@ -10,6 +10,12 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        case_sensitive = True
+        fields = {
+            "database_url": {"env": "DATABASE_URL"},
+            "redis_url": {"env": "REDIS_URL"},
+            "environment": {"env": "ENVIRONMENT"},
+        }
 
 
 @lru_cache

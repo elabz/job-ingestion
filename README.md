@@ -30,6 +30,36 @@ conda run -n job-ingestion-service uvicorn src.job_ingestion.api.main:app --relo
 # Open http://localhost:8000/health and http://localhost:8000/docs
 ```
 
+## Configuration
+
+The service uses Pydantic BaseSettings (v1) for configuration.
+
+- __Env vars__
+  - `DATABASE_URL` (str). Default: `sqlite:///./db.sqlite3`
+  - `REDIS_URL` (str). Default: `redis://localhost:6379`
+  - `ENVIRONMENT` (str). Default: `development`
+
+- __.env support__
+  - Values are loaded from `.env` if present. Variable names are case-sensitive.
+  - Copy `.env.example` to `.env` and adjust as needed.
+
+- __Example .env__
+
+```env
+DATABASE_URL=postgresql://postgres:password@localhost:5432/job_ingestion
+REDIS_URL=redis://localhost:6379
+ENVIRONMENT=development
+```
+
+- __Access in code__
+
+```python
+from job_ingestion.utils.config import get_settings
+
+settings = get_settings()
+print(settings.database_url)
+```
+
 ## Developer Docs
 
 - Quickstart: `docs/QUICKSTART.md`

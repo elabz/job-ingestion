@@ -1,6 +1,6 @@
 # T03: Configuration management via Pydantic Settings (v1)
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Centralize env config with `.env` support using `pydantic.BaseSettings` (Pydantic v1).
@@ -14,14 +14,14 @@ Centralize env config with `.env` support using `pydantic.BaseSettings` (Pydanti
 - Ensure imports: `from pydantic import BaseSettings` (v1) not pydantic-settings.
 
 ## Checklist
-- [ ] Implement `Settings` with correct types and defaults.
-- [ ] Add `.env.example` with variables and guidance.
-- [ ] Add `get_settings()` cached accessor.
-- [ ] Unit tests for default and override behaviors.
+- [x] Implement `Settings` with correct types and defaults.
+- [x] Add `.env.example` with variables and guidance.
+- [x] Add `get_settings()` cached accessor.
+- [x] Unit tests for default and override behaviors.
 
 ## Acceptance criteria
-- [ ] Importing `get_settings()` returns a `Settings` instance and reads `.env` if present.
-- [ ] `tests/unit/test_settings.py` passes.
+- [x] Importing `get_settings()` returns a `Settings` instance and reads `.env` if present.
+- [x] `tests/unit/test_settings.py` passes.
 
 ## Verification
 ```bash
