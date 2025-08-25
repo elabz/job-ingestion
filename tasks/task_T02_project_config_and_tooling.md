@@ -1,6 +1,6 @@
 # T02: Project configuration and tooling
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Configure Black, Ruff, MyPy (strict), pytest, and pre-commit hooks.
@@ -12,15 +12,15 @@ Configure Black, Ruff, MyPy (strict), pytest, and pre-commit hooks.
 - Ensure `environment.yml` contains tooling.
 
 ## Checklist
-- [ ] Black config with line-length 100 and py310.
-- [ ] Ruff select rule sets (e.g., E,F,I,UP,B). Exclude `tests/fixtures/*` as needed.
-- [ ] MyPy strict: `warn-redundant-casts`, `warn-unused-ignores`, `disallow-any-generics`, etc.
-- [ ] pytest config: `testpaths=["tests"]`, `addopts=-q`.
-- [ ] Pre-commit hooks wired and passing.
+- [x] Black config with line-length 100 and py310.
+- [x] Ruff select rule sets (e.g., E,F,I,UP,B). Exclude `tests/fixtures/*` as needed.
+- [x] MyPy strict: `warn-redundant-casts`, `warn-unused-ignores`, `disallow-any-generics`, etc.
+- [x] pytest config: `testpaths=["tests"]`, `addopts=-q`.
+- [x] Pre-commit hooks wired and passing.
 
 ## Acceptance criteria
-- [ ] `make quality-check` succeeds.
-- [ ] `pre-commit run --all-files` passes.
+- [x] `make quality-check` succeeds.
+- [x] `pre-commit run --all-files` passes.
 
 ## Verification
 ```bash
