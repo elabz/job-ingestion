@@ -60,6 +60,22 @@ settings = get_settings()
 print(settings.database_url)
 ```
 
+## Development database
+
+- The default `DATABASE_URL` is SQLite: `sqlite:///./db.sqlite3`.
+- SQLAlchemy 2.x ORM is used for models and sessions.
+- To create tables locally:
+
+```python
+from job_ingestion.storage.models import Base
+from job_ingestion.storage.repositories import get_engine
+
+engine = get_engine("sqlite:///./db.sqlite3")
+Base.metadata.create_all(bind=engine)
+```
+
+Models live in `src/job_ingestion/storage/models.py` and session helpers in `src/job_ingestion/storage/repositories.py`.
+
 ## Developer Docs
 
 - Quickstart: `docs/QUICKSTART.md`

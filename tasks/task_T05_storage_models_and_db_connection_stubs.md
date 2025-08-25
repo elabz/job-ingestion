@@ -1,6 +1,6 @@
 # T05: Storage models and DB connection interface (stubs)
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Define SQLAlchemy models and session factory (no migrations yet).
@@ -15,13 +15,13 @@ Define SQLAlchemy models and session factory (no migrations yet).
 - Target dev DB: SQLite for now.
 
 ## Checklist
-- [ ] Define `Job` model and metadata.
-- [ ] Provide session utilities.
-- [ ] Unit tests create in-memory SQLite and reflect tables.
+- [x] Define `Job` model and metadata.
+- [x] Provide session utilities.
+- [x] Unit tests create in-memory SQLite and reflect tables.
 
 ## Acceptance criteria
-- [ ] Importing and creating `Base.metadata.create_all(bind=engine)` works.
-- [ ] Unique constraint on `external_id` present.
+- [x] Importing and creating `Base.metadata.create_all(bind=engine)` works.
+- [x] Unique constraint on `external_id` present.
 
 ## Verification
 ```bash
