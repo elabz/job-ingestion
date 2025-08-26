@@ -119,6 +119,26 @@ Models live in `src/job_ingestion/storage/models.py` and session helpers in `src
 - Python 3.10, FastAPI, pytest. Code style via Black, lint via Ruff, types via MyPy (strict).
 - Always develop inside the Conda env or use `conda run -n job-ingestion-service ...`.
 
+## Logging
+
+- The project uses `structlog` for structured logs via `job_ingestion.utils.logging.get_logger()`.
+- Environment-aware output:
+  - `ENVIRONMENT=production` -> JSON logs
+  - otherwise -> human-friendly console logs
+
+Example:
+
+```python
+from job_ingestion.utils.logging import get_logger
+
+logger = get_logger("example")
+logger.info("job.ingested", job_id="123", approved=True)
+```
+
+Tips:
+- Prefer binding a module/service name (e.g. `get_logger("api.main")`).
+- Inject a logger into components for easier testing.
+
 ## Local services with Docker Compose (Postgres + Redis)
 
 - Copy `.env.example` to `.env` and adjust if needed. The example `DATABASE_URL` points to local Postgres.

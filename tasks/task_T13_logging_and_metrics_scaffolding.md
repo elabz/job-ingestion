@@ -1,22 +1,22 @@
 # T13: Logging and metrics scaffolding
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Create structured logging with `structlog` and metrics placeholders.
 
 ## Implementation details
 - `src/job_ingestion/utils/logging.py` sets up structlog processors and returns a logger via `get_logger()`.
-- `src/job_ingestion/utils/metrics.py` exposes `Counter`-like no-op wrappers (functions/classes) to avoid external deps for now.
-- Integrate logger into app startup minimally.
+- `src/job_ingestion/utils/metrics.py` exposes no-op counters (increment/get/reset) to avoid external deps for now.
+- Logger integrated into app startup with a simple `app.startup` info event in `src/job_ingestion/api/main.py`.
 
 ## Checklist
-- [ ] Implement logging config and export `get_logger`.
-- [ ] Implement metrics placeholders.
-- [ ] Unit tests ensure logger is usable.
+- [x] Implement logging config and export `get_logger`.
+- [x] Implement metrics placeholders.
+- [x] Unit tests ensure logger is usable.
 
 ## Acceptance criteria
-- [ ] Importing `get_logger()` returns an object with `.info()`.
+- [x] Importing `get_logger()` returns an object with `.info()`.
 
 ## Verification
 ```bash
