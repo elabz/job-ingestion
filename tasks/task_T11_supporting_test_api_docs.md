@@ -1,6 +1,6 @@
 # T11 (supporting): Integration test for OpenAPI docs
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Add `tests/integration/test_api_docs.py` checking OpenAPI contains components.
@@ -9,10 +9,10 @@ Add `tests/integration/test_api_docs.py` checking OpenAPI contains components.
 - Implement test to fetch `/openapi.json` and assert presence of `components.schemas.JobPosting`.
 
 ## Checklist
-- [ ] Add integration test file and assertions.
+- [x] Add integration test file and assertions.
 
 ## Acceptance criteria
-- [ ] Test passes when models are wired.
+- [x] Test passes when models are wired.
 
 ## Verification
 ```bash
