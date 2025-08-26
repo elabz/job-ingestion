@@ -10,7 +10,7 @@ This project uses a Conda environment and pre-commit hooks. Always develop insid
 ```bash
 conda env create -f environment.yml
 conda activate job-ingestion-service
-# Install dev extras (if not already installed via conda)
+# Install dev hooks
 pre-commit install
 ```
 
@@ -36,15 +36,44 @@ make pre-commit-all
 ## Code Style
 - Python 3.10+
 - Black (line length 100)
-- Ruff for linting
-- MyPy in strict mode
+- Ruff for linting (includes import sort with `ruff check --select I --fix`)
+- MyPy in strict mode over `src`
+- Keep functions small and typed. Add docstrings for public APIs.
 
-## Testing
-- Unit tests go under `tests/unit/`
+## Testing Strategy
+- Unit tests under `tests/unit/`
 - Integration tests under `tests/integration/`
-- Add fixtures to `tests/fixtures/`
+- Shared fixtures under `tests/fixtures/`
+- Run all tests quickly:
+  ```bash
+  conda run -n job-ingestion-service env DISABLE_DOTENV=1 PYTHONPATH=src python -m pytest -q
+  ```
+- Run only unit or integration:
+  ```bash
+  make test-unit
+  make test-integration
+  ```
+- CI and local dev use the same checks via `make quality-check`.
 
-## FastAPI Dev Server
+## Running the API Locally
 ```bash
 conda run -n job-ingestion-service uvicorn src.job_ingestion.api.main:app --reload --port 8000
+# Visit http://localhost:8000/health and http://localhost:8000/docs
 ```
+
+## Git Workflow
+- Create feature branches from `main` (e.g., `feature/T18-docs`, `fix/ingest-500`)
+- Keep PRs small and focused.
+- Rebase over `main` when needed; prefer linear history.
+
+## Pull Request Checklist
+- [ ] Updated/added tests as necessary
+- [ ] `make quality-check` passes locally
+- [ ] `pre-commit run --all-files` passes (Black, Ruff, MyPy)
+- [ ] Docs updated (README, QUICKSTART, or in `tasks/` as appropriate)
+- [ ] Verified critical endpoints via curl when relevant (e.g., `/health`, `/docs`)
+- [ ] Self-reviewed code (naming, typing, logs)
+
+## Version Notes
+- Pydantic v1.x (`pydantic<2`) is used; refer to Pydantic v1 docs.
+- FastAPI is pinned `<0.100` to remain compatible with Pydantic v1.

@@ -1,6 +1,6 @@
 # T18: Documentation — CONTRIBUTING and Quickstart
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Write `CONTRIBUTING.md` (Conda, quality checks, test strategy) and expand `README.md`.
@@ -10,10 +10,10 @@ Write `CONTRIBUTING.md` (Conda, quality checks, test strategy) and expand `READM
 - README: Quickstart, run commands, directory structure, version notes (Pydantic v1).
 
 ## Checklist
-- [ ] Add sections and verify correctness.
+- [x] Add sections and verify correctness.
 
 ## Acceptance criteria
-- [ ] Steps work end-to-end locally.
+- [x] Steps work end-to-end locally.
 
 ## Verification
 ```bash

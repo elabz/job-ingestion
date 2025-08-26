@@ -123,10 +123,37 @@ Models live in `src/job_ingestion/storage/models.py` and session helpers in `src
 - Contributing guide: `CONTRIBUTING.md`
 - Task backlog: `tasks/BACKLOG.md`
 
+## Project structure
+
+```
+.
+├── src/
+│   └── job_ingestion/
+│       ├── api/                 # FastAPI app and routes
+│       ├── ingestion/           # Ingestion logic and helpers
+│       ├── approval/            # Rule-based approval modules
+│       ├── storage/             # SQLAlchemy models and repositories
+│       └── utils/               # Config, logging, and common utilities
+├── tests/
+│   ├── unit/                    # Unit tests
+│   └── integration/             # Integration tests
+├── docs/                        # Developer docs (Quickstart)
+├── tasks/                       # Project tasks and PRDs
+├── environment.yml              # Conda environment spec
+├── requirements.txt             # Runtime deps (pinned to Pydantic v1)
+├── pyproject.toml               # Tooling configs (Black, Ruff, MyPy)
+└── Makefile                     # Common developer commands
+```
+
 ## Notes
 
 - Python 3.10, FastAPI, pytest. Code style via Black, lint via Ruff, types via MyPy (strict).
 - Always develop inside the Conda env or use `conda run -n job-ingestion-service ...`.
+
+### Version compatibility
+- FastAPI is pinned `<0.100` to ensure compatibility with Pydantic v1.
+- Pydantic is pinned `<2` (v1 series). Refer to Pydantic v1 docs and APIs.
+- When upgrading, review breaking changes (FastAPI + Pydantic v2 migration) before bumping pins.
 
 ## Logging
 

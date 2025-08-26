@@ -30,7 +30,7 @@ make quality-check
 
 ## 5) Start the API locally
 ```bash
-uvicorn src.job_ingestion.api.main:app --reload --port 8000
+conda run -n job-ingestion-service uvicorn src.job_ingestion.api.main:app --reload --port 8000
 # Open http://localhost:8000/health
 # Open http://localhost:8000/docs
 ```
