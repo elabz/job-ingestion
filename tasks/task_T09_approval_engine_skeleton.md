@@ -1,6 +1,6 @@
 # T09: Approval engine skeleton
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Implement `ApprovalEngine` class with rule registry and `evaluate_job()` stub returning `ApprovalDecision` dataclass.
@@ -13,12 +13,12 @@ Implement `ApprovalEngine` class with rule registry and `evaluate_job()` stub re
   - Protocol/ABC for rules: `def __call__(self, job: dict) -> tuple[bool, str|None]`.
 
 ## Checklist
-- [ ] Implement dataclass and engine with registry list.
-- [ ] Support both callables and objects implementing the protocol.
-- [ ] Unit tests covering registration and evaluation aggregation.
+- [x] Implement dataclass and engine with registry list.
+- [x] Support both callables and objects implementing the protocol.
+- [x] Unit tests covering registration and evaluation aggregation.
 
 ## Acceptance criteria
-- [ ] Able to register a rule and evaluate a job to produce decision with reasons.
+- [x] Able to register a rule and evaluate a job to produce decision with reasons.
 
 ## Verification
 ```bash

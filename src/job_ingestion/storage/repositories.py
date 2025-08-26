@@ -19,13 +19,13 @@ def get_engine(url: str, echo: bool = False) -> Engine:
     return create_engine(url, echo=echo, future=True, connect_args=args)
 
 
-def get_sessionmaker(engine: Engine) -> sessionmaker:
+def get_sessionmaker(engine: Engine) -> sessionmaker[Session]:
     """Return a configured sessionmaker bound to the engine."""
     return sessionmaker(bind=engine, class_=Session, expire_on_commit=False, future=True)
 
 
 @contextmanager
-def get_session(session_maker: sessionmaker) -> Generator[Session, None, None]:
+def get_session(session_maker: sessionmaker[Session]) -> Generator[Session, None, None]:
     """Context manager that yields a Session and handles commit/rollback."""
     session = session_maker()
     try:

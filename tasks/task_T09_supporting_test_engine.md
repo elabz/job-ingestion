@@ -1,6 +1,6 @@
 # T09 (supporting): Unit test for ApprovalEngine
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Add `tests/unit/approval/test_engine.py` covering registry and decision aggregation.
@@ -9,10 +9,10 @@ Add `tests/unit/approval/test_engine.py` covering registry and decision aggregat
 - Create dummy rules that return pass/fail and reasons.
 
 ## Checklist
-- [ ] Implement tests.
+- [x] Implement tests.
 
 ## Acceptance criteria
-- [ ] Engine aggregates reasons and boolean outcome.
+- [x] Engine aggregates reasons and boolean outcome.
 
 ## Verification
 ```bash

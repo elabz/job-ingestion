@@ -1,6 +1,5 @@
 import pytest
-
-from src.job_ingestion.transformation.normalizers import (
+from job_ingestion.transformation.normalizers import (
     CompanyValidator,
     LocationNormalizer,
     SalaryNormalizer,
@@ -19,7 +18,7 @@ class TestLocationNormalizer:
 
 
 class TestSalaryNormalizer:
-    @pytest.mark.parametrize(
+    @pytest.mark.parametrize(  # type: ignore[misc]
         "raw,expected",
         [
             ("1200 - 3400", (1200, 3400)),
@@ -40,7 +39,7 @@ class TestCompanyValidator:
         v = CompanyValidator()
         assert v.validate("Acme Inc.") is True
 
-    @pytest.mark.parametrize("raw", ["", "   ", "12345", "  42  "])
+    @pytest.mark.parametrize("raw", ["", "   ", "12345", "  42  "])  # type: ignore[misc]
     def test_invalid_company(self, raw: str) -> None:
         v = CompanyValidator()
         assert v.validate(raw) is False
