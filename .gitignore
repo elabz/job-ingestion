@@ -211,3 +211,6 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Uvicorn dev server PID file
+.tmp_uvicorn_pid

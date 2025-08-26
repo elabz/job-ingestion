@@ -20,6 +20,7 @@ pre-commit install
 - Type-check: `make type-check`
 - Tests: `make test`
 - All checks: `make quality-check`
+- Dev server: `make run-dev`
 
 ## Pre-Commit
 Run hooks locally before committing:

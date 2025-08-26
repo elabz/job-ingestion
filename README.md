@@ -30,6 +30,15 @@ conda run -n job-ingestion-service uvicorn src.job_ingestion.api.main:app --relo
 # Open http://localhost:8000/health and http://localhost:8000/docs
 ```
 
+## Make targets
+
+- __format__: `make format` — Black format `src` and `tests`.
+- __lint__: `make lint` — Ruff lint (non-mutating, CI-friendly).
+- __type-check__: `make type-check` — MyPy strict type checks over `src`.
+- __test__: `make test` — Run full pytest suite.
+- __quality-check__: `make quality-check` — Runs format, lint, type-check, and tests.
+- __run-dev__: `make run-dev` — Start FastAPI via Uvicorn with reload.
+
 ### Ingest jobs (returns 202 with processing_id)
 
 Single payload:

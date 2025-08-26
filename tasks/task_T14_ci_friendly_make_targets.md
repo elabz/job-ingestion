@@ -1,6 +1,6 @@
 # T14: CI-friendly Make targets
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Complete Makefile with `format`, `lint`, `type-check`, `test`, `quality-check`, `run-dev` using Conda.
@@ -11,11 +11,11 @@ Complete Makefile with `format`, `lint`, `type-check`, `test`, `quality-check`, 
 - Ensure phony targets and helpful echo.
 
 ## Checklist
-- [ ] Implement Make targets and verify.
-- [ ] Works on macOS with Conda.
+- [x] Implement Make targets and verify.
+- [x] Works on macOS with Conda.
 
 ## Acceptance criteria
-- [ ] All targets run successfully locally.
+- [x] All targets run successfully locally.
 
 ## Verification
 ```bash
