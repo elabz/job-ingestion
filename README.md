@@ -30,6 +30,38 @@ conda run -n job-ingestion-service uvicorn src.job_ingestion.api.main:app --relo
 # Open http://localhost:8000/health and http://localhost:8000/docs
 ```
 
+### Ingest jobs (returns 202 with processing_id)
+
+Single payload:
+
+```bash
+curl -i -s -X POST http://127.0.0.1:8000/api/v1/jobs/ingest \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "title":"Data Engineer",
+    "description":"Build pipelines",
+    "employment_type":"full-time",
+    "hiring_organization":{"name":"Acme Inc"},
+    "date_posted":"2024-01-01T00:00:00Z"
+  }'
+```
+
+Batch payload:
+
+```bash
+curl -i -s -X POST http://127.0.0.1:8000/api/v1/jobs/ingest \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "jobs":[{
+      "title":"Data Engineer",
+      "description":"Build pipelines",
+      "employment_type":"full-time",
+      "hiring_organization":{"name":"Acme Inc"},
+      "date_posted":"2024-01-01T00:00:00Z"
+    }]
+  }'
+```
+
 ## Configuration
 
 The service uses Pydantic BaseSettings (v1) for configuration.

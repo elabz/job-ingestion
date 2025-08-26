@@ -12,7 +12,7 @@ class ApprovalStatus(str, Enum):
     REJECTED = "REJECTED"
 
 
-class Base(DeclarativeBase):  # type: ignore[misc]
+class Base(DeclarativeBase):  # type: ignore[misc,unused-ignore]
     pass
 
 
