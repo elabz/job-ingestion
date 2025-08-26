@@ -1,6 +1,6 @@
 # T16: Sample fixtures and test data
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Add sample job JSON fixtures to support tests.
@@ -10,11 +10,11 @@ Add sample job JSON fixtures to support tests.
 - Keep values realistic but anonymized.
 
 ## Checklist
-- [ ] Add fixture file and ensure JSON valid.
-- [ ] Reference in future tests where applicable.
+- [x] Add fixture file and ensure JSON valid.
+- [x] Reference in future tests where applicable.
 
 ## Acceptance criteria
-- [ ] File parsable and used in at least one integration test later.
+- [x] File parsable and used in at least one integration test later.
 
 ## Verification
 ```bash

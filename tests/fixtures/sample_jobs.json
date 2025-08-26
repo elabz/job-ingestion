@@ -1,0 +1,50 @@
+[
+  {
+    "external_id": "A-001",
+    "title": "Senior Data Engineer",
+    "description": "We are seeking a Senior Data Engineer to design and build robust data pipelines and platforms.",
+    "location": "New York, NY",
+    "min_salary": 160000,
+    "company_name": "Globex Corporation"
+  },
+  {
+    "external_id": 1002,
+    "position": "Backend Software Engineer",
+    "details": "Build reliable backend services and APIs with Python and FastAPI in a cloud-native environment.",
+    "city": "San Francisco, CA",
+    "salary": "50k–70k",
+    "employer": "Initech"
+  },
+  {
+    "external_id": "C-003",
+    "job_title": "Junior QA Tester",
+    "summary": "Assist with test case execution and reporting for web applications.",
+    "location": "Remote",
+    "salary_text": "25k",
+    "company": "Hooli"
+  },
+  {
+    "external_id": "D-004",
+    "title": "Data Analyst",
+    "description": "Analyze datasets, create dashboards, and support business stakeholders with insights.",
+    "region": "Austin, TX",
+    "min_salary": 60000,
+    "employer": "Vandelay Industries"
+  },
+  {
+    "external_id": "E-005",
+    "title": "IT Support Specialist",
+    "description": "Short desc.",
+    "location": "Chicago, IL",
+    "min_salary": 45000,
+    "company_name": "Stark Industries"
+  },
+  {
+    "external_id": "F-006",
+    "title": "Product Manager",
+    "description": "Lead cross-functional teams to deliver product features; define roadmap and success metrics.",
+    "location": "Seattle, WA",
+    "compensation": "120k - 150k",
+    "company": "Acme Corp"
+  }
+]
