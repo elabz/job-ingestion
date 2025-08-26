@@ -1,6 +1,6 @@
 # T12: Docker compose for local DB/Redis (dev only)
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Add `docker-compose.yml` with Postgres and Redis for local development.
@@ -13,12 +13,12 @@ Add `docker-compose.yml` with Postgres and Redis for local development.
 - Volumes for persistence optional (dev only).
 
 ## Checklist
-- [ ] Compose file present and valid.
-- [ ] Environment variables documented in `.env.example`.
-- [ ] Optional wait script added and executable.
+- [x] Compose file present and valid.
+- [x] Environment variables documented in `.env.example`.
+- [x] Optional wait script added and executable.
 
 ## Acceptance criteria
-- [ ] `docker compose up -d db redis` succeeds; services healthy.
+- [x] `docker compose up -d db redis` succeeds; services healthy.
 
 ## Verification
 ```bash

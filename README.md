@@ -118,3 +118,31 @@ Models live in `src/job_ingestion/storage/models.py` and session helpers in `src
 
 - Python 3.10, FastAPI, pytest. Code style via Black, lint via Ruff, types via MyPy (strict).
 - Always develop inside the Conda env or use `conda run -n job-ingestion-service ...`.
+
+## Local services with Docker Compose (Postgres + Redis)
+
+- Copy `.env.example` to `.env` and adjust if needed. The example `DATABASE_URL` points to local Postgres.
+- `.env` also includes `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` used by Compose for the `db` service.
+
+Start services and check health:
+
+```bash
+docker compose up -d db redis
+docker compose ps
+# Optional: wait until services are ready
+./scripts/wait_for_services.sh
+```
+
+Stop services:
+
+```bash
+docker compose down
+```
+
+Verify API still runs locally and responds (separate terminal):
+
+```bash
+conda run -n job-ingestion-service uvicorn src.job_ingestion.api.main:app --reload --port 8000 &
+sleep 2
+curl -sS http://127.0.0.1:8000/health | jq .
+```

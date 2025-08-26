@@ -72,7 +72,8 @@ def patch_dependencies(monkeypatch: pytest.MonkeyPatch, recorded: _Recorded) -> 
     monkeypatch.setattr(service_module, "get_session", fake_get_session)
     monkeypatch.setattr(service_module, "get_engine", fake_get_engine)
     monkeypatch.setattr(service_module, "get_sessionmaker", fake_get_sessionmaker)
-    monkeypatch.setattr(service_module.Base.metadata, "create_all", fake_create_all)  # type: ignore[attr-defined]
+    # Use string target to avoid mypy attr-defined when accessing module attributes
+    monkeypatch.setattr("job_ingestion.storage.models.Base.metadata.create_all", fake_create_all)
 
 
 def test_orchestration_counts_and_persistence(recorded: _Recorded) -> None:
