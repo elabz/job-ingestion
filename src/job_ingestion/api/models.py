@@ -76,10 +76,24 @@ class IngestResponse(BaseModel):
     estimated_completion: datetime | None = Field(None, description="Optional ETA for completion")
 
 
+class ProcessingStatusResponse(BaseModel):
+    """Processing status snapshot for a submitted batch."""
+
+    processing_id: UUID
+    total: int
+    processed: int
+    approved: int
+    rejected: int
+    errors: int
+    started_at: datetime | None
+    finished_at: datetime | None
+
+
 __all__ = [
     "JobPosting",
     "PingResponse",
     "SingleJobPostingRequest",
     "IngestBatchRequest",
     "IngestResponse",
+    "ProcessingStatusResponse",
 ]

@@ -1,18 +1,39 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
+from datetime import datetime
 from typing import Any
+from uuid import uuid4
+
+from job_ingestion.approval.engine import ApprovalEngine
+from job_ingestion.approval.rules.content_rules import get_rules as content_rules
+from job_ingestion.approval.rules.location_rules import get_rules as location_rules
+from job_ingestion.approval.rules.salary_rules import get_rules as salary_rules
+from job_ingestion.ingestion import schema_detector
+from job_ingestion.storage.models import ApprovalStatus, Base, Job
+from job_ingestion.storage.repositories import get_engine, get_session, get_sessionmaker
+from job_ingestion.transformation.normalizers import LocationNormalizer, SalaryNormalizer
+from job_ingestion.utils import metrics
+from job_ingestion.utils.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 
 class IngestionService:
     """
-    Public interface for the ingestion service.
+    Public interface and implementation for the ingestion service.
 
-    This service is responsible for accepting job data payloads, tracking
-    processing status for submitted batches, and registering source schemas
-    that describe incoming data formats. Implementations will be provided in
-    later tasks; this module defines the stable API surface.
+    Orchestrates:
+    - Schema detection
+    - Field normalization
+    - Approval rule evaluation
+    - Persistence
+    - In-memory processing status tracking
     """
+
+    # Lightweight in-memory status store; to be moved to Redis/DB in later tasks
+    _batches: dict[str, dict[str, Any]] = {}
 
     def ingest_batch(self, jobs_data: Sequence[dict[str, Any]]) -> str:
         """
@@ -20,50 +41,173 @@ class IngestionService:
 
         Args:
             jobs_data: A sequence of dictionaries representing raw job data
-                from an external source. Each dict should conform to a
-                registered source schema or a default schema.
+                from an external source.
 
         Returns:
-            A string identifier for the created batch. This ID can be used to
-            query processing status via `get_processing_status()`.
-
-        Raises:
-            NotImplementedError: This is a stub implementation.
+            processing_id (str): Identifier for the processed batch.
         """
-        # TODO(T06): Implement ingestion coordination and persistence logic.
-        raise NotImplementedError("ingest_batch is not yet implemented")
+
+        processing_id = str(uuid4())
+        started_at = datetime.utcnow()
+
+        # Initialize status tracking
+        self._batches[processing_id] = {
+            "total": len(jobs_data),
+            "processed": 0,
+            "approved": 0,
+            "rejected": 0,
+            "errors": 0,
+            "started_at": started_at,
+            "finished_at": None,
+        }
+
+        logger.info(
+            "ingest_batch started", extra={"processing_id": processing_id, "total": len(jobs_data)}
+        )
+        metrics.increment("ingest.batch_started")
+
+        # Detect schema (heuristic placeholder)
+        try:
+            schema_name = schema_detector.detect_schema(jobs_data)
+        except Exception:  # pragma: no cover - defensive
+            logger.exception("schema detection failed; defaulting to 'unknown'")
+            schema_name = "unknown"
+
+        # Build dependencies
+        settings = get_settings()
+        engine = get_engine(settings.database_url)
+        # Ensure tables exist (dev/test convenience)
+        Base.metadata.create_all(bind=engine)
+        session_maker = get_sessionmaker(engine)
+
+        rules = [*content_rules(), *location_rules(), *salary_rules()]
+        approval_engine = ApprovalEngine(rules=rules)
+
+        loc_norm = LocationNormalizer()
+        sal_norm = SalaryNormalizer()
+
+        status = self._batches[processing_id]
+
+        for idx, raw in enumerate(jobs_data):
+            try:
+                # Normalize fields to a canonical structure used by rules and persistence
+                title = self._get_title(raw)
+                description = self._get_description(raw)
+                # Produce min_salary if salary-looking text provided
+                min_salary = self._extract_min_salary(raw, sal_norm)
+                location = self._extract_location(raw, loc_norm)
+
+                external_id = self._get_external_id(raw, processing_id, idx)
+
+                canonical_job: dict[str, Any] = {
+                    "title": title,
+                    "description": description,
+                    "min_salary": min_salary,
+                    "location": location,
+                    "external_id": external_id,
+                    "_schema": schema_name,
+                }
+
+                decision = approval_engine.evaluate_job(canonical_job)
+                approval_status = (
+                    ApprovalStatus.APPROVED if decision.approved else ApprovalStatus.REJECTED
+                )
+
+                # Persist minimal fields
+                with get_session(session_maker) as s:
+                    s.add(
+                        Job(external_id=external_id, title=title, approval_status=approval_status)
+                    )
+
+                # Update counters
+                status["processed"] += 1
+                if approval_status == ApprovalStatus.APPROVED:
+                    status["approved"] += 1
+                    metrics.increment("ingest.item_approved")
+                else:
+                    status["rejected"] += 1
+                    metrics.increment("ingest.item_rejected")
+
+                logger.debug(
+                    "ingested item",
+                    extra={
+                        "processing_id": processing_id,
+                        "index": idx,
+                        "external_id": external_id,
+                        "approved": decision.approved,
+                        "reasons": decision.reasons,
+                    },
+                )
+            except Exception as exc:  # keep processing on errors
+                status["errors"] += 1
+                metrics.increment("ingest.item_error")
+                logger.exception(
+                    "error ingesting item",
+                    extra={"processing_id": processing_id, "index": idx, "error": str(exc)},
+                )
+
+        status["finished_at"] = datetime.utcnow()
+        metrics.increment("ingest.batch_finished")
+        logger.info(
+            "ingest_batch finished",
+            extra={
+                "processing_id": processing_id,
+                "processed": status["processed"],
+                "approved": status["approved"],
+                "rejected": status["rejected"],
+                "errors": status["errors"],
+            },
+        )
+
+        return processing_id
 
     def get_processing_status(self, batch_id: str) -> dict[str, Any]:
         """
         Retrieve processing status for a previously submitted batch.
 
-        Args:
-            batch_id: The identifier returned from `ingest_batch()`.
-
-        Returns:
-            A dictionary describing the current processing status, e.g.,
-            {"batch_id": str, "status": str, "processed": int, "total": int}.
-
-        Raises:
-            NotImplementedError: This is a stub implementation.
+        Returns a dict with counts and timestamps, or an empty dict if unknown.
         """
-        # TODO(T06): Implement status retrieval from storage/queue/worker layer.
-        raise NotImplementedError("get_processing_status is not yet implemented")
+        return dict(self._batches.get(batch_id, {}))
 
-    def register_source_schema(self, name: str, schema: dict[str, Any]) -> None:
-        """
-        Register or update a named source schema for incoming job data.
+    # --- Helpers ---
+    @staticmethod
+    def _get_title(raw: dict[str, Any]) -> str:
+        title = raw.get("title") or raw.get("job_title") or raw.get("position")
+        if isinstance(title, str) and title.strip():
+            return title
+        return "(untitled)"
 
-        Args:
-            name: A unique name for the source schema (e.g., provider or feed).
-            schema: A JSON-schema-like dictionary describing the expected
-                structure of input job records for this source.
+    @staticmethod
+    def _get_description(raw: dict[str, Any]) -> str:
+        desc = raw.get("description") or raw.get("details") or raw.get("summary")
+        return desc if isinstance(desc, str) else ""
 
-        Returns:
-            None
+    @staticmethod
+    def _get_external_id(raw: dict[str, Any], processing_id: str, idx: int) -> str:
+        ext = raw.get("external_id") or raw.get("id")
+        if isinstance(ext, str | int):
+            return str(ext)
+        # Fallback to a generated ID that is unique within the batch
+        return f"proc-{processing_id}-{idx + 1}"
 
-        Raises:
-            NotImplementedError: This is a stub implementation.
-        """
-        # TODO(T06): Persist schema and validate incoming payloads against it.
+    @staticmethod
+    def _extract_location(raw: dict[str, Any], loc_norm: LocationNormalizer) -> str | None:
+        loc = raw.get("location") or raw.get("city") or raw.get("region")
+        if isinstance(loc, str):
+            return loc_norm.normalize(loc)
+        return None
+
+    @staticmethod
+    def _extract_min_salary(raw: dict[str, Any], sal_norm: SalaryNormalizer) -> int | None:
+        # Look for common fields; prefer explicit numeric min
+        if "min_salary" in raw and isinstance(raw["min_salary"], int | float):
+            return int(raw["min_salary"])
+        salary_text = raw.get("salary") or raw.get("salary_text") or raw.get("compensation")
+        if isinstance(salary_text, str):
+            low, _ = sal_norm.parse_range(salary_text)
+            return low
+        return None
+
+    # Placeholder for future schema registration API
+    def register_source_schema(self, name: str, schema: dict[str, Any]) -> None:  # pragma: no cover
         raise NotImplementedError("register_source_schema is not yet implemented")
