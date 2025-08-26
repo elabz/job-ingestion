@@ -1,6 +1,6 @@
 # T08: Transformation normalizers (stubs)
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Create `LocationNormalizer`, `SalaryNormalizer`, `CompanyValidator` classes with method stubs.
@@ -13,11 +13,11 @@ Create `LocationNormalizer`, `SalaryNormalizer`, `CompanyValidator` classes with
 - Provide basic placeholder logic and type hints.
 
 ## Checklist
-- [ ] Implement classes and methods.
-- [ ] Unit tests for expected datatypes and basic behavior.
+- [x] Implement classes and methods.
+- [x] Unit tests for expected datatypes and basic behavior.
 
 ## Acceptance criteria
-- [ ] Functions return expected types and sentinel Nones where needed.
+- [x] Functions return expected types and sentinel Nones where needed.
 
 ## Verification
 ```bash
