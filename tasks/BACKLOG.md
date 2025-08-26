@@ -150,6 +150,42 @@ Each task is small, independently implementable, and includes steps, docs, verif
 - Verification: All tests still pass; run mypy.
 - Tests: Update tests accordingly.
 
+## T21: Implement POST /api/v1/jobs/ingest endpoint
+- Summary: Implement ingestion endpoint accepting a single job or batch payload and returning 202 with a `processing_id`.
+- Affected: `src/job_ingestion/api/routes.py`, `src/job_ingestion/api/models.py`, `src/job_ingestion/ingestion/service.py`, `tests/integration/test_ingest_api.py`.
+- Steps:
+  1) Define request models per PRD OpenAPI (oneOf `SingleJobPosting` or `JobPostingBatch`) reusing the `JobPosting` schema.
+  2) Implement POST `/api/v1/jobs/ingest` that validates payload and invokes `IngestionService.ingest_batch()`; respond 202 with `processing_id` and message.
+  3) Wire the route into `api_router` in `src/job_ingestion/api/routes.py`.
+  4) Add basic error handling for invalid payloads (422) and unexpected errors (500).
+- Docs: Update `README.md` Quickstart with curl examples.
+- Verification:
+  - Start: `conda run -n job-ingestion-service uvicorn src.job_ingestion.api.main:app --reload`.
+  - Single example:
+    curl -s -X POST http://127.0.0.1:8000/api/v1/jobs/ingest -H 'Content-Type: application/json' -d '{"title":"Data Engineer","description":"Build pipelines","employment_type":"full-time","hiring_organization":{"name":"Acme Inc"},"date_posted":"2024-01-01T00:00:00Z"}'
+    Expect 202 with JSON containing `processing_id` (UUID).
+  - Batch example:
+    curl -s -X POST http://127.0.0.1:8000/api/v1/jobs/ingest -H 'Content-Type: application/json' -d '{"jobs":[{"title":"Data Engineer","description":"Build pipelines","employment_type":"full-time","hiring_organization":{"name":"Acme Inc"},"date_posted":"2024-01-01T00:00:00Z"}]}'
+    Expect 202 with `processing_id`.
+- Tests: Implement `tests/integration/test_ingest_api.py` asserting 202 response and presence of `processing_id` for single and batch payloads.
+
+## T22: Implement Ingestion Service Layer (Full Implementation)
+- Summary: Implement the full `IngestionService` pipeline to process batch jobs end-to-end: schema detection, normalization, approval evaluation, persistence, and processing status tracking. Replace API fallback UUID with a real `processing_id` returned from the service.
+- Affected: `src/job_ingestion/ingestion/service.py`, `src/job_ingestion/ingestion/schema_detector.py`, `src/job_ingestion/transformation/normalizers.py`, `src/job_ingestion/approval/engine.py`, `src/job_ingestion/storage/models.py`, `src/job_ingestion/storage/repositories.py`, tests under `tests/unit/ingestion/` and `tests/integration/`.
+- Steps:
+  1) Implement `ingest_batch(jobs: list[dict[str, Any]]) -> str` to orchestrate: detect schema, normalize to canonical shape, evaluate approval via `ApprovalEngine`, and persist `Job` rows via SQLAlchemy repository.
+  2) Generate and return a UUID4 `processing_id`. Track per-batch status in-memory (counts: total, processed, approved, rejected, errors; timestamps start/finish). Mark finished when all items processed.
+  3) Implement `get_processing_status(processing_id: str)` returning a dict with the above counts and timestamps.
+  4) Add structured logging at batch start/end and per item; increment simple metrics counters. Ensure strict typing and docstrings.
+  5) Update the API route to rely on the service’s `processing_id` (no fallback when service implemented).
+- Docs: Update `README.md` to describe processing stages and note that `processing_id` is now produced by the service. Cross-check FastAPI/Pydantic/SQLAlchemy usage against latest docs.
+- Verification:
+  - `conda run -n job-ingestion-service make quality-check` passes.
+  - Manual: POST single and batch to `/api/v1/jobs/ingest` using curl examples; verify 202 and that rows are written (query dev DB via a short SQLAlchemy snippet or test helper).
+- Tests:
+  - Unit: `tests/unit/ingestion/test_service_impl.py` mocking collaborators to assert orchestration order, error handling, and accurate status counts.
+  - Integration: `tests/integration/test_ingest_end_to_end.py` posting via API and verifying `Job` persistence and approval statuses.
+
 ---
 
 Notes:
