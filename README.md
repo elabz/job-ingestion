@@ -151,9 +151,10 @@ Models live in `src/job_ingestion/storage/models.py` and session helpers in `src
 - Always develop inside the Conda env or use `conda run -n job-ingestion-service ...`.
 
 ### Version compatibility
-- FastAPI is pinned `<0.100` to ensure compatibility with Pydantic v1.
-- Pydantic is pinned `<2` (v1 series). Refer to Pydantic v1 docs and APIs.
-- When upgrading, review breaking changes (FastAPI + Pydantic v2 migration) before bumping pins.
+ - FastAPI is pinned `~=0.111` to remain on the Pydantic v1-compatible series.
+ - Pydantic is pinned `~=1.10` (v1 series). Refer to Pydantic v1 docs and APIs.
+ - Starlette is pinned `>=0.37.2,<0.38.0` to match FastAPI 0.111.x requirements.
+ - Migration to Pydantic v2 is tracked in `tasks/task_T20_migrate_to_pydantic_v2_follow_up.md`.
 
 ## Logging
 

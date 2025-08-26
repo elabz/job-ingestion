@@ -6,11 +6,12 @@ dependencies:
   - python=3.10
   - pandas>=1.5.0
   - numpy>=1.24.0
-  - fastapi<0.100  # FastAPI <0.100 uses Pydantic v1
+  - fastapi=0.111.*  # FastAPI 0.111.x supports Pydantic v1
   - uvicorn>=0.20.0
   - sqlalchemy>=2.0.0
   - alembic>=1.10.0
-  - pydantic<2
+  - pydantic=1.10.*
+  - starlette>=0.37.2,<0.38.0
   - httpx>=0.24.0,<0.28
   - redis-py>=4.5.0
   - celery>=5.2.0
@@ -19,6 +20,7 @@ dependencies:
   - black==24.8.0
   - mypy==1.11.2
   - pip>=23.0.0
+  - packaging>=23.0.0
   - pip:
     - psycopg2-binary>=2.9.0
     - python-dotenv>=1.0.0
