@@ -186,6 +186,21 @@ Each task is small, independently implementable, and includes steps, docs, verif
   - Unit: `tests/unit/ingestion/test_service_impl.py` mocking collaborators to assert orchestration order, error handling, and accurate status counts.
   - Integration: `tests/integration/test_ingest_end_to_end.py` posting via API and verifying `Job` persistence and approval statuses.
 
+## T23: Dockerize application container with live reload
+- Summary: Add Dockerfile and compose `app` service to run FastAPI with reload and source bind mount for active development.
+- Affected: `Dockerfile`, `docker-compose.yml`, `.env.example`, `.dockerignore`, `requirements.txt`.
+- Steps:
+  1) Create `Dockerfile` using `python:3.10-slim`, install `requirements.txt`, set `PYTHONPATH`, and run uvicorn with `--reload`.
+  2) Add `app` service to `docker-compose.yml` exposing `${APP_HOST_PORT:-8000}` and mounting `./src:/app/src`.
+  3) Default `DATABASE_URL` to Postgres service (`db`) and `REDIS_URL` to Redis service (`redis`) inside container.
+  4) Add `.dockerignore` and `APP_HOST_PORT` to `.env.example`.
+  5) Optional healthcheck on `/health` for the app service.
+- Docs: Update `README.md`/`docs/QUICKSTART.md` with instructions to run the app via compose and verify with curl.
+- Verification:
+  - `docker compose up -d db redis app` completes; `docker compose ps` shows healthy services.
+  - `curl -sSf http://127.0.0.1:${APP_HOST_PORT:-8000}/health` returns `{ "status": "ok" }`.
+- Tests: Not applicable; smoke verification via curl only.
+
 ---
 
 Notes:

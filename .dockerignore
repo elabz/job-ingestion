@@ -1,0 +1,31 @@
+# VCS
+.git
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.pytest_cache
+.mypy_cache
+.venv
+.conda
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+
+# Local env files
+.env
+.env.*
+
+# Build/test artifacts
+coverage.xml
+htmlcov/
+dist/
+build/
+.eggs/
+
+# Docker
+Dockerfile*

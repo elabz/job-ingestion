@@ -1,4 +1,28 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: job_ingestion_app
+    ports:
+      - "${APP_HOST_PORT:-8000}:8000"
+    environment:
+      # Defaults point to compose services when not overridden
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:password@db:5432/job_ingestion}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      PYTHONPATH: /app/src
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      - db
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
   db:
     image: postgres:15
     container_name: job_ingestion_db

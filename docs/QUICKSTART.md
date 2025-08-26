@@ -34,3 +34,26 @@ uvicorn src.job_ingestion.api.main:app --reload --port 8000
 # Open http://localhost:8000/health
 # Open http://localhost:8000/docs
 ```
+
+## 6) Run the API in Docker (live reload)
+- Ensure Docker Desktop is running.
+- Copy `.env.example` to `.env`. Optionally change `APP_HOST_PORT` or `REDIS_HOST_PORT` to avoid port conflicts.
+
+Start services:
+
+```bash
+docker compose up -d db redis app
+docker compose ps
+```
+
+Verify with curl:
+
+```bash
+curl -sS http://127.0.0.1:${APP_HOST_PORT:-8000}/health | jq .
+```
+
+Stop:
+
+```bash
+docker compose down
+```

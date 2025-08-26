@@ -1,0 +1,11 @@
+fastapi<0.100
+uvicorn[standard]>=0.20.0
+sqlalchemy>=2.0.0
+alembic>=1.10.0
+pydantic<2
+httpx>=0.24.0,<0.28
+redis>=4.5.0
+celery>=5.2.0
+psycopg2-binary>=2.9.0
+python-dotenv>=1.0.0
+structlog>=23.0.0

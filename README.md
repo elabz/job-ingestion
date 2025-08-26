@@ -146,3 +146,30 @@ conda run -n job-ingestion-service uvicorn src.job_ingestion.api.main:app --relo
 sleep 2
 curl -sS http://127.0.0.1:8000/health | jq .
 ```
+
+## Run the API in Docker (live reload)
+
+- Ensure Docker is installed and running.
+- Copy `.env.example` to `.env` if not already done.
+- Optionally change `APP_HOST_PORT` (default 8000) or `REDIS_HOST_PORT` in `.env` to avoid port conflicts.
+
+Start the app alongside Postgres and Redis:
+
+```bash
+docker compose up -d db redis app
+docker compose ps
+```
+
+Verify the health endpoint (curl):
+
+```bash
+curl -sS http://127.0.0.1:${APP_HOST_PORT:-8000}/health | jq .
+```
+
+Live reload: edits under `./src/` are bind-mounted into the container and auto-reloaded by Uvicorn.
+
+Stop services:
+
+```bash
+docker compose down
+```
