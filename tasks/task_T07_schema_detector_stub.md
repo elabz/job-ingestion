@@ -1,6 +1,6 @@
 # T07: Schema detector (stub)
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Add JSON schema detection module with simple heuristic placeholder.
@@ -12,15 +12,15 @@ Add JSON schema detection module with simple heuristic placeholder.
 - Keep logic simple and typed.
 
 ## Checklist
-- [ ] Implement function with deterministic mapping.
-- [ ] Unit tests cover key presence branches.
+- [x] Implement function with deterministic mapping.
+- [x] Unit tests cover key presence branches.
 
 ## Acceptance criteria
-- [ ] Returns expected literal values given fixtures.
+- [x] Returns expected literal values given fixtures.
 
 ## Verification
 ```bash
-conda run -n job-ingestion-service pytest -q tests/unit/ingestion/test_schema_detector.py
+conda run -n job-ingestion-service env PYTHONPATH=src python -m pytest -q tests/unit/ingestion/test_schema_detector.py
 ```
 
 ## Docs
