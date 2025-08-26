@@ -1,6 +1,6 @@
 # T10: Rules modules (stubs)
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Implement placeholder `location_rules.py`, `salary_rules.py`, `content_rules.py` with simple pass/fail.
@@ -13,11 +13,11 @@ Implement placeholder `location_rules.py`, `salary_rules.py`, `content_rules.py`
 - Example: salary min threshold rule approving if min >= THRESHOLD.
 
 ## Checklist
-- [ ] Implement three rule modules with at least one rule each.
-- [ ] Unit tests in `tests/unit/approval/test_rules.py` covering pass/fail.
+- [x] Implement three rule modules with at least one rule each.
+- [x] Unit tests in `tests/unit/approval/test_rules.py` covering pass/fail.
 
 ## Acceptance criteria
-- [ ] Engine can load rules and evaluate decisions as expected.
+- [x] Engine can load rules and evaluate decisions as expected.
 
 ## Verification
 ```bash
