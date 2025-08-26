@@ -31,4 +31,4 @@ test-integration:
 	conda run -n $(ENV_NAME) env PYTHONPATH=src python -m pytest -q tests/integration -s
 
 run-dev:
-	conda run -n $(ENV_NAME) uvicorn src.job_ingestion.api.main:app --reload --port 8000
+	conda run -n $(ENV_NAME) env PYTHONPATH=src python -m uvicorn src.job_ingestion.api.main:app --reload --host 127.0.0.1 --port 8000
