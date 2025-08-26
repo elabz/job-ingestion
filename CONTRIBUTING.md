@@ -28,6 +28,11 @@ Run hooks locally before committing:
 pre-commit run --all-files
 ```
 
+Or via Make (uses Conda automatically):
+```bash
+make pre-commit-all
+```
+
 ## Code Style
 - Python 3.10+
 - Black (line length 100)

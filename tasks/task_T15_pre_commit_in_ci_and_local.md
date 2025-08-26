@@ -1,6 +1,6 @@
 # T15: Pre-commit in CI and local
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Ensure `pre-commit` installed and `pre-commit run --all-files` clean.
@@ -11,11 +11,11 @@ Ensure `pre-commit` installed and `pre-commit run --all-files` clean.
 - Optional: pre-commit.ci config later.
 
 ## Checklist
-- [ ] Hooks present and versions pinned.
-- [ ] Local run passes on a clean checkout.
+- [x] Hooks present and versions pinned.
+- [x] Local run passes on a clean checkout.
 
 ## Acceptance criteria
-- [ ] `pre-commit run --all-files` returns 0.
+- [x] `pre-commit run --all-files` returns 0.
 
 ## Verification
 ```bash

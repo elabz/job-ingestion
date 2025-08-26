@@ -1,6 +1,6 @@
 ENV_NAME=job-ingestion-service
 
-.PHONY: init conda-create pre-commit-install format lint type-check test test-unit test-integration run-dev quality-check
+.PHONY: init conda-create pre-commit-install pre-commit-all format lint type-check test test-unit test-integration run-dev quality-check
 
 init: conda-create pre-commit-install
 	@echo "==> Initialized development environment"
@@ -12,6 +12,10 @@ conda-create:
 pre-commit-install:
 	@echo "==> Installing pre-commit hooks"
 	conda run -n $(ENV_NAME) pre-commit install
+
+pre-commit-all:
+	@echo "==> Running pre-commit on all files"
+	conda run -n $(ENV_NAME) pre-commit run --all-files
 
 format:
 	@echo "==> Formatting with Black"
