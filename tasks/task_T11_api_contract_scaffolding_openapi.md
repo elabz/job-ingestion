@@ -1,6 +1,6 @@
 # T11: API contract scaffolding (OpenAPI)
 
-- [ ] Task complete
+- [x] Task complete
 
 ## Summary
 Add OpenAPI schemas for JobPosting and basic endpoints.
@@ -12,11 +12,11 @@ Add OpenAPI schemas for JobPosting and basic endpoints.
 - Confirm `/docs` renders components.
 
 ## Checklist
-- [ ] Define models with field types and examples.
-- [ ] Wire into routes where applicable.
+- [x] Define models with field types and examples.
+- [x] Wire into routes where applicable.
 
 ## Acceptance criteria
-- [ ] OpenAPI schema includes `JobPosting` component.
+- [x] OpenAPI schema includes `JobPosting` component.
 
 ## Verification
 ```bash
