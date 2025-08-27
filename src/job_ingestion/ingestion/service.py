@@ -10,7 +10,8 @@ from job_ingestion.approval.rules.content_rules import get_rules as content_rule
 from job_ingestion.approval.rules.location_rules import get_rules as location_rules
 from job_ingestion.approval.rules.salary_rules import get_rules as salary_rules
 from job_ingestion.ingestion import schema_detector
-from job_ingestion.storage.models import ApprovalStatus, Base, Job
+from job_ingestion.ingestion.job_mapper import JobDataMapper
+from job_ingestion.storage.models import ApprovalStatus, Base, Job, RejectedJob
 from job_ingestion.storage.repositories import get_engine, get_session, get_sessionmaker
 from job_ingestion.transformation.normalizers import LocationNormalizer, SalaryNormalizer
 from job_ingestion.utils import metrics
@@ -81,56 +82,58 @@ class IngestionService:
         rules = [*content_rules(), *location_rules(), *salary_rules()]
         approval_engine = ApprovalEngine(rules=rules)
 
-        loc_norm = LocationNormalizer()
-        sal_norm = SalaryNormalizer()
+        job_mapper = JobDataMapper()
 
         status = self._batches[processing_id]
 
         for idx, raw in enumerate(jobs_data):
             try:
-                # Normalize fields to a canonical structure used by rules and persistence
-                title = self._get_title(raw)
-                description = self._get_description(raw)
-                # Produce min_salary if salary-looking text provided
-                min_salary = self._extract_min_salary(raw, sal_norm)
-                location = self._extract_location(raw, loc_norm)
+                # Map all job data to database fields
+                mapped_data = job_mapper.map_job_data(raw)
 
-                external_id = self._get_external_id(raw, processing_id, idx)
-
+                # Create canonical job for approval engine (backward compatibility)
                 canonical_job: dict[str, Any] = {
-                    "title": title,
-                    "description": description,
-                    "min_salary": min_salary,
-                    "location": location,
-                    "external_id": external_id,
+                    "title": mapped_data.get("title", "(untitled)"),
+                    "description": mapped_data.get("short_description")
+                    or mapped_data.get("full_description", ""),
+                    "min_salary": mapped_data.get("salary_min"),
+                    "location": mapped_data.get("primary_location"),
+                    "external_id": mapped_data.get("external_id"),
                     "_schema": schema_name,
                 }
 
                 decision = approval_engine.evaluate_job(canonical_job)
-                approval_status = (
-                    ApprovalStatus.APPROVED if decision.approved else ApprovalStatus.REJECTED
-                )
 
-                # Persist minimal fields
+                # Persist with comprehensive fields
                 with get_session(session_maker) as s:
-                    s.add(
-                        Job(external_id=external_id, title=title, approval_status=approval_status)
-                    )
+                    if decision.approved:
+                        # Create approved job with all mapped fields
+                        job = Job(approval_status=ApprovalStatus.APPROVED, **mapped_data)
+                        s.add(job)
+                        status["approved"] += 1
+                        metrics.increment("ingest.item_approved")
+                    else:
+                        # Create rejected job with rejection reasons
+                        rejection_reasons = (
+                            "; ".join(decision.reasons)
+                            if decision.reasons
+                            else "Failed approval rules"
+                        )
+                        rejected_job = RejectedJob(
+                            rejection_reasons=rejection_reasons, **mapped_data
+                        )
+                        s.add(rejected_job)
+                        status["rejected"] += 1
+                        metrics.increment("ingest.item_rejected")
 
                 # Update counters
                 status["processed"] += 1
-                if approval_status == ApprovalStatus.APPROVED:
-                    status["approved"] += 1
-                    metrics.increment("ingest.item_approved")
-                else:
-                    status["rejected"] += 1
-                    metrics.increment("ingest.item_rejected")
 
                 logger.info(
                     "ingest.item",
                     processing_id=processing_id,
                     index=idx,
-                    external_id=external_id,
+                    external_id=mapped_data.get("external_id"),
                     approved=decision.approved,
                     reasons=decision.reasons,
                 )

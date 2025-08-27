@@ -8,13 +8,13 @@ from typing import Any
 import job_ingestion.ingestion.service as service_module
 import pytest
 from job_ingestion.ingestion.service import IngestionService
-from job_ingestion.storage.models import ApprovalStatus, Job
+from job_ingestion.storage.models import ApprovalStatus, Job, RejectedJob
 
 
 @dataclass
 class _Recorded:
     evaluated: list[dict[str, Any]]
-    added: list[Job]
+    added: list[Job | RejectedJob]
 
 
 @pytest.fixture()  # type: ignore[misc]
@@ -55,7 +55,7 @@ def patch_dependencies(monkeypatch: pytest.MonkeyPatch, recorded: _Recorded) -> 
     def fake_get_session(_session_maker: Any) -> Iterator[Any]:  # noqa: ANN401
         class _S:
             def add(self, obj: Any) -> None:  # noqa: ANN401
-                assert isinstance(obj, Job)
+                assert isinstance(obj, Job | RejectedJob)
                 recorded.added.append(obj)
 
         yield _S()
@@ -97,7 +97,12 @@ def test_orchestration_counts_and_persistence(recorded: _Recorded) -> None:
 
     # DB adds recorded with expected approval status
     assert len(recorded.added) == 2
-    statuses = {j.title: j.approval_status for j in recorded.added}
+    statuses = {}
+    for j in recorded.added:
+        if isinstance(j, Job):
+            statuses[j.title] = j.approval_status
+        elif isinstance(j, RejectedJob):
+            statuses[j.title] = "REJECTED"
     assert statuses["Approve me"] == ApprovalStatus.APPROVED
     assert statuses["Please reject"] == ApprovalStatus.REJECTED
 
