@@ -9,6 +9,7 @@ from job_ingestion.approval.engine import ApprovalEngine
 from job_ingestion.approval.rules.company_type_rules import get_rules as company_type_rules
 from job_ingestion.approval.rules.content_rules import get_rules as content_rules
 from job_ingestion.approval.rules.employment_type_rules import get_rules as employment_type_rules
+from job_ingestion.approval.rules.language_rules import get_rules as language_rules
 from job_ingestion.approval.rules.location_rules import get_rules as location_rules
 from job_ingestion.approval.rules.salary_rules import get_rules as salary_rules
 from job_ingestion.ingestion import schema_detector
@@ -87,6 +88,7 @@ class IngestionService:
             *salary_rules(),
             *employment_type_rules(),
             *company_type_rules(),
+            *language_rules(),
         ]
         approval_engine = ApprovalEngine(rules=rules)
 
@@ -108,6 +110,7 @@ class IngestionService:
                     "location": mapped_data.get("primary_location"),
                     "employment_type": raw.get("employment_type"),
                     "company_type": raw.get("company_type"),
+                    "language": raw.get("language"),
                     "external_id": mapped_data.get("external_id"),
                     "_schema": schema_name,
                 }

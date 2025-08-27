@@ -7,6 +7,7 @@ from job_ingestion.approval.rules import (
     company_type_rules,
     content_rules,
     employment_type_rules,
+    language_rules,
     location_rules,
     salary_rules,
 )
@@ -93,7 +94,7 @@ def test_geographical_location_rule() -> None:
     assert ok is False and "Job location must be in US/Canada or remote" in (reason or "")
 
     ok, reason = geo_rule({"location": "London, UK", "remote": False})
-    assert ok is False and "Job location must be in US/Canada or remote" in (reason or "")
+    assert ok is False and "Unable to determine country from location" in (reason or "")
 
     ok, reason = geo_rule({"location": {"city": "Manchester", "country": "UK"}, "remote": False})
     assert ok is False and "Job location must be in US/Canada or remote" in (reason or "")
@@ -218,6 +219,68 @@ def test_company_type_rules_pass_fail() -> None:
     )
 
 
+def test_language_rules_pass_fail() -> None:
+    """Test language approval rules."""
+    rules = language_rules.get_rules()
+    # mypy/type-check: ensure protocol compatibility
+    for r in rules:
+        assert callable(r)
+
+    language_rule: ApprovalRule = rules[0]
+
+    # Test English in various countries (should pass)
+    ok, reason = language_rule({"language": "English", "location": {"country": "USA"}})
+    assert ok is True and reason is None
+
+    ok, reason = language_rule({"language": "english", "location": {"country": "Canada"}})
+    assert ok is True and reason is None
+
+    ok, reason = language_rule({"language": "ENGLISH", "location": {"country": "UK"}})
+    assert ok is True and reason is None
+
+    ok, reason = language_rule({"language": "en", "location": "New York, NY, USA"})
+    assert ok is True and reason is None
+
+    # Test French in Canada (should pass)
+    ok, reason = language_rule({"language": "French", "location": {"country": "Canada"}})
+    assert ok is True and reason is None
+
+    ok, reason = language_rule({"language": "french", "location": "Montreal, QC, Canada"})
+    assert ok is True and reason is None
+
+    ok, reason = language_rule({"language": "fr", "location": {"country": "Canada"}})
+    assert ok is True and reason is None
+
+    # Test French outside Canada (should fail)
+    ok, reason = language_rule({"language": "French", "location": {"country": "USA"}})
+    assert ok is False and "French language is only accepted for jobs in Canada" in (reason or "")
+
+    ok, reason = language_rule({"language": "French", "location": "Paris, France"})
+    assert ok is False and "French language is only accepted for jobs in Canada" in (reason or "")
+
+    # Test unsupported languages (should fail)
+    ok, reason = language_rule({"language": "Spanish", "location": {"country": "USA"}})
+    assert ok is False and "Job must be in English (or French if in Canada), got: Spanish" in (
+        reason or ""
+    )
+
+    ok, reason = language_rule({"language": "German", "location": {"country": "Canada"}})
+    assert ok is False and "Job must be in English (or French if in Canada), got: German" in (
+        reason or ""
+    )
+
+    # Test missing language (should fail)
+    ok, reason = language_rule({"location": {"country": "USA"}})
+    assert ok is False and "Job must specify a language" in (reason or "")
+
+    # Test empty language (should fail)
+    ok, reason = language_rule({"language": "", "location": {"country": "USA"}})
+    assert ok is False and "Job must specify a language" in (reason or "")
+
+    ok, reason = language_rule({"language": "   ", "location": {"country": "USA"}})
+    assert ok is False and "Job must specify a language" in (reason or "")
+
+
 def test_engine_with_all_rules() -> None:
     engine = ApprovalEngine(
         [
@@ -226,15 +289,17 @@ def test_engine_with_all_rules() -> None:
             *content_rules.get_rules(),
             *employment_type_rules.get_rules(),
             *company_type_rules.get_rules(),
+            *language_rules.get_rules(),
         ]
     )
 
     passing_job: dict[str, Any] = {
         "min_salary": salary_rules.MIN_SALARY_THRESHOLD + 5_000,
-        "location": "Berlin, DE",
+        "location": "New York, NY, USA",
         "title": "Backend Engineer",
         "description": "This is a long enough description to pass the content rule.",
         "employment_type": "Full-Time",
+        "language": "English",
     }
     decision_ok = engine.evaluate_job(passing_job)
     assert decision_ok.approved is True

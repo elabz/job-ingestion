@@ -8,7 +8,7 @@ in structure) to the standardized database schema with comprehensive job propert
 from datetime import datetime
 from typing import Any
 
-from dateutil import parser as date_parser
+from dateutil import parser as date_parser  # type: ignore[import-untyped]
 
 from job_ingestion.utils.logging import get_logger
 
