@@ -4,6 +4,7 @@ from typing import Any
 
 from job_ingestion.approval.engine import ApprovalEngine
 from job_ingestion.approval.rules import (
+    company_type_rules,
     content_rules,
     employment_type_rules,
     location_rules,
@@ -162,6 +163,61 @@ def test_employment_type_rules_pass_fail() -> None:
     assert ok is False and "Job must be a full-time position, got: None" in (reason or "")
 
 
+def test_company_type_rules_pass_fail() -> None:
+    """Test company type approval rules."""
+    rules = company_type_rules.get_rules()
+    # mypy/type-check: ensure protocol compatibility
+    for r in rules:
+        assert callable(r)
+
+    company_type_rule: ApprovalRule = rules[0]
+
+    # Test valid company types (should pass)
+    ok, reason = company_type_rule({"company_type": "Direct Employer"})
+    assert ok is True and reason is None
+
+    ok, reason = company_type_rule({"company_type": "Consulting Agency"})
+    assert ok is True and reason is None
+
+    ok, reason = company_type_rule({"company_type": "Startup"})
+    assert ok is True and reason is None
+
+    # Test missing company type (should pass - not rejected)
+    ok, reason = company_type_rule({})
+    assert ok is True and reason is None
+
+    # Test rejected company types (should fail)
+    ok, reason = company_type_rule({"company_type": "Staffing Firm"})
+    assert ok is False and "Job must not be from a staffing firm, got: Staffing Firm" in (
+        reason or ""
+    )
+
+    ok, reason = company_type_rule({"company_type": "staffing firm"})
+    assert ok is False and "Job must not be from a staffing firm, got: staffing firm" in (
+        reason or ""
+    )
+
+    ok, reason = company_type_rule({"company_type": "STAFFING FIRM"})
+    assert ok is False and "Job must not be from a staffing firm, got: STAFFING FIRM" in (
+        reason or ""
+    )
+
+    ok, reason = company_type_rule({"company_type": "Staffing Agency"})
+    assert ok is False and "Job must not be from a staffing firm, got: Staffing Agency" in (
+        reason or ""
+    )
+
+    ok, reason = company_type_rule({"company_type": "Recruiting Firm"})
+    assert ok is False and "Job must not be from a staffing firm, got: Recruiting Firm" in (
+        reason or ""
+    )
+
+    ok, reason = company_type_rule({"company_type": "Recruitment Agency"})
+    assert ok is False and "Job must not be from a staffing firm, got: Recruitment Agency" in (
+        reason or ""
+    )
+
+
 def test_engine_with_all_rules() -> None:
     engine = ApprovalEngine(
         [
@@ -169,6 +225,7 @@ def test_engine_with_all_rules() -> None:
             *location_rules.get_rules(),
             *content_rules.get_rules(),
             *employment_type_rules.get_rules(),
+            *company_type_rules.get_rules(),
         ]
     )
 

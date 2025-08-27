@@ -6,6 +6,7 @@ from typing import Any
 from uuid import uuid4
 
 from job_ingestion.approval.engine import ApprovalEngine
+from job_ingestion.approval.rules.company_type_rules import get_rules as company_type_rules
 from job_ingestion.approval.rules.content_rules import get_rules as content_rules
 from job_ingestion.approval.rules.employment_type_rules import get_rules as employment_type_rules
 from job_ingestion.approval.rules.location_rules import get_rules as location_rules
@@ -80,7 +81,13 @@ class IngestionService:
         Base.metadata.create_all(bind=engine)
         session_maker = get_sessionmaker(engine)
 
-        rules = [*content_rules(), *location_rules(), *salary_rules(), *employment_type_rules()]
+        rules = [
+            *content_rules(),
+            *location_rules(),
+            *salary_rules(),
+            *employment_type_rules(),
+            *company_type_rules(),
+        ]
         approval_engine = ApprovalEngine(rules=rules)
 
         job_mapper = JobDataMapper()
@@ -100,6 +107,7 @@ class IngestionService:
                     "min_salary": mapped_data.get("salary_min"),
                     "location": mapped_data.get("primary_location"),
                     "employment_type": raw.get("employment_type"),
+                    "company_type": raw.get("company_type"),
                     "external_id": mapped_data.get("external_id"),
                     "_schema": schema_name,
                 }
