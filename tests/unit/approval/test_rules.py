@@ -39,6 +39,68 @@ def test_location_rules_pass_fail() -> None:
     assert ok is False and (reason or "").lower().startswith("missing location")
 
 
+def test_geographical_location_rule() -> None:
+    """Test the geographical location approval rule."""
+    rules = location_rules.get_rules()
+    geo_rule: ApprovalRule = rules[1]  # geographical location rule is second
+
+    # Test remote jobs (should always pass)
+    ok, reason = geo_rule({"remote": True, "location": {"country": "France"}})
+    assert ok is True and reason is None
+
+    ok, reason = geo_rule({"is_remote": True, "location": "London, UK"})
+    assert ok is True and reason is None
+
+    # Test US locations (object format)
+    ok, reason = geo_rule(
+        {"location": {"city": "Austin", "state": "TX", "country": "USA"}, "remote": False}
+    )
+    assert ok is True and reason is None
+
+    ok, reason = geo_rule(
+        {"location": {"city": "Seattle", "state": "WA", "country": "US"}, "remote": False}
+    )
+    assert ok is True and reason is None
+
+    # Test Canada locations (object format)
+    ok, reason = geo_rule(
+        {"location": {"city": "Vancouver", "state": "BC", "country": "Canada"}, "remote": False}
+    )
+    assert ok is True and reason is None
+
+    # Test US locations (string format)
+    ok, reason = geo_rule({"location": "New York, NY, USA", "remote": False})
+    assert ok is True and reason is None
+
+    ok, reason = geo_rule({"location": "Seattle, WA, US", "remote": False})
+    assert ok is True and reason is None
+
+    # Test Canada locations (string format)
+    ok, reason = geo_rule({"location": "Toronto, ON, Canada", "remote": False})
+    assert ok is True and reason is None
+
+    ok, reason = geo_rule({"location": "Montreal, QC, Canada", "remote": False})
+    assert ok is True and reason is None
+
+    # Test non-US/Canada locations (should fail)
+    ok, reason = geo_rule({"location": {"city": "Paris", "country": "France"}, "remote": False})
+    assert ok is False and "Job location must be in US/Canada or remote" in (reason or "")
+
+    ok, reason = geo_rule({"location": "London, UK", "remote": False})
+    assert ok is False and "Job location must be in US/Canada or remote" in (reason or "")
+
+    ok, reason = geo_rule({"location": {"city": "Manchester", "country": "UK"}, "remote": False})
+    assert ok is False and "Job location must be in US/Canada or remote" in (reason or "")
+
+    # Test missing location
+    ok, reason = geo_rule({"remote": False})
+    assert ok is False and "Missing location information" in (reason or "")
+
+    # Test unparseable location
+    ok, reason = geo_rule({"location": "Unknown Format", "remote": False})
+    assert ok is False and "Unable to determine country from location" in (reason or "")
+
+
 def test_content_rules_pass_fail() -> None:
     rules = content_rules.get_rules()
     content_rule: ApprovalRule = rules[0]
