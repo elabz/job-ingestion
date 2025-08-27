@@ -17,16 +17,22 @@ def test_ingest_persists_jobs_and_statuses(client: Any) -> None:
     payload = {
         "jobs": [
             {
-                "title": "OK",
-                "description": "Approved job description long enough",
-                "location": "NYC, USA",
-                "min_salary": 50000,
+                "title": "Senior Python Developer",
+                "description": "We are looking for a Senior Python Developer to join our team. "
+                "This is a full-time position requiring Python expertise.",
+                "location": "New York, NY, USA",
+                "min_salary": 120000,
+                "employment_type": "Full-Time",
+                "language": "English",
             },
             {
-                "title": "Too Low",
-                "description": "This will be rejected due to low salary threshold",
-                "location": "Remote",
-                "min_salary": 20000,
+                "title": "Junior Data Analyst",
+                "description": "Entry level data analyst position with competitive salary and "
+                "benefits package.",
+                "location": "San Francisco, CA, USA",
+                "min_salary": 105000,
+                "employment_type": "Full-Time",
+                "language": "English",
             },
         ]
     }
@@ -44,5 +50,5 @@ def test_ingest_persists_jobs_and_statuses(client: Any) -> None:
         assert len(rows) >= 2  # allow other tests to have inserted rows as well
         # Find our titles
         by_title = {j.title: j for j in rows}
-        assert by_title["OK"].approval_status == ApprovalStatus.APPROVED
-        assert by_title["Too Low"].approval_status == ApprovalStatus.REJECTED
+        assert by_title["Senior Python Developer"].approval_status == ApprovalStatus.APPROVED
+        assert by_title["Junior Data Analyst"].approval_status == ApprovalStatus.APPROVED

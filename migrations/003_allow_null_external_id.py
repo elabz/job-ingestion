@@ -45,11 +45,65 @@ def upgrade(engine: Engine) -> None:
 
             # For jobs table
             try:
-                # Create new table with nullable external_id
+                # Create new table with proper schema and nullable external_id
                 conn.execute(
                     text(
                         """
-                    CREATE TABLE jobs_new AS SELECT * FROM jobs
+                    CREATE TABLE jobs_new (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        external_id TEXT,
+                        title TEXT NOT NULL,
+                        salary_min DECIMAL(12,2),
+                        salary_max DECIMAL(12,2),
+                        estimated_salary_min DECIMAL(12,2),
+                        estimated_salary_max DECIMAL(12,2),
+                        base_salary TEXT,
+                        salary_currency TEXT,
+                        salary_unit TEXT,
+                        is_salary_estimate BOOLEAN,
+                        is_salary_confidential BOOLEAN DEFAULT 0,
+                        company_name TEXT,
+                        is_company_confidential BOOLEAN DEFAULT 0,
+                        short_description TEXT,
+                        full_description TEXT,
+                        primary_location TEXT,
+                        zipcode TEXT,
+                        county TEXT,
+                        latitude DECIMAL(10,8),
+                        longitude DECIMAL(11,8),
+                        years_experience INTEGER,
+                        years_experience_id INTEGER,
+                        industry_name TEXT,
+                        industry_id INTEGER,
+                        job_type_id INTEGER,
+                        remote_flag BOOLEAN DEFAULT 0,
+                        posting_date DATETIME,
+                        entry_date DATETIME,
+                        update_date DATETIME,
+                        external_application_url TEXT,
+                        seo_job_link TEXT,
+                        seo_location TEXT,
+                        is_active BOOLEAN DEFAULT 1,
+                        allows_external_apply BOOLEAN DEFAULT 1,
+                        is_promoted BOOLEAN DEFAULT 0,
+                        is_featured BOOLEAN DEFAULT 0,
+                        is_marketing BOOLEAN DEFAULT 0,
+                        recruiter_anonymous BOOLEAN DEFAULT 0,
+                        score DECIMAL(5,2),
+                        collapse_key TEXT,
+                        approval_status TEXT DEFAULT 'pending',
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                """
+                    )
+                )
+
+                # Copy data from old table
+                conn.execute(
+                    text(
+                        """
+                    INSERT INTO jobs_new SELECT * FROM jobs
                 """
                     )
                 )
@@ -64,11 +118,65 @@ def upgrade(engine: Engine) -> None:
 
             # For rejected_jobs table
             try:
-                # Create new table with nullable external_id
+                # Create new table with proper schema and nullable external_id
                 conn.execute(
                     text(
                         """
-                    CREATE TABLE rejected_jobs_new AS SELECT * FROM rejected_jobs
+                    CREATE TABLE rejected_jobs_new (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        rejection_reasons TEXT NOT NULL,
+                        external_id TEXT,
+                        title TEXT NOT NULL,
+                        salary_min DECIMAL(12,2),
+                        salary_max DECIMAL(12,2),
+                        estimated_salary_min DECIMAL(12,2),
+                        estimated_salary_max DECIMAL(12,2),
+                        base_salary TEXT,
+                        salary_currency TEXT,
+                        salary_unit TEXT,
+                        is_salary_estimate BOOLEAN,
+                        is_salary_confidential BOOLEAN DEFAULT 0,
+                        company_name TEXT,
+                        is_company_confidential BOOLEAN DEFAULT 0,
+                        short_description TEXT,
+                        full_description TEXT,
+                        primary_location TEXT,
+                        zipcode TEXT,
+                        county TEXT,
+                        latitude DECIMAL(10,8),
+                        longitude DECIMAL(11,8),
+                        years_experience INTEGER,
+                        years_experience_id INTEGER,
+                        industry_name TEXT,
+                        industry_id INTEGER,
+                        job_type_id INTEGER,
+                        remote_flag BOOLEAN DEFAULT 0,
+                        posting_date DATETIME,
+                        entry_date DATETIME,
+                        update_date DATETIME,
+                        external_application_url TEXT,
+                        seo_job_link TEXT,
+                        seo_location TEXT,
+                        is_active BOOLEAN DEFAULT 1,
+                        allows_external_apply BOOLEAN DEFAULT 1,
+                        is_promoted BOOLEAN DEFAULT 0,
+                        is_featured BOOLEAN DEFAULT 0,
+                        is_marketing BOOLEAN DEFAULT 0,
+                        recruiter_anonymous BOOLEAN DEFAULT 0,
+                        score DECIMAL(5,2),
+                        collapse_key TEXT,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                """
+                    )
+                )
+
+                # Copy data from old table (if any exists)
+                conn.execute(
+                    text(
+                        """
+                    INSERT INTO rejected_jobs_new SELECT * FROM rejected_jobs
                 """
                     )
                 )
