@@ -74,11 +74,16 @@ class JobDataMapper:
 
     def _map_salary_info(self, raw: dict[str, Any]) -> dict[str, Any]:
         """Map salary and compensation information."""
+        # Extract salary information with flexible parsing
+        salary_min, salary_max, base_salary = self._extract_salary_data(raw)
+
         return {
-            "salary_min": self._safe_get_numeric(
+            "salary_min": salary_min
+            or self._safe_get_numeric(
                 raw, ["lowerBand", "compensationMin", "salary_min", "min_salary"]
             ),
-            "salary_max": self._safe_get_numeric(
+            "salary_max": salary_max
+            or self._safe_get_numeric(
                 raw, ["upperBand", "compensationMax", "salary_max", "max_salary"]
             ),
             "estimated_salary_min": self._safe_get_numeric(
@@ -87,9 +92,8 @@ class JobDataMapper:
             "estimated_salary_max": self._safe_get_numeric(
                 raw, ["estimatedUpperBand", "estimated_max"]
             ),
-            "base_salary": self._safe_get_string(
-                raw, ["baseSalary", "base_salary", "salary_range"]
-            ),
+            "base_salary": base_salary
+            or self._safe_get_string(raw, ["baseSalary", "base_salary", "salary_range"]),
             "is_salary_estimate": self._safe_get_bool(raw, ["isLaddersEstimate", "is_estimate"]),
             "is_salary_confidential": self._safe_get_bool(
                 raw, ["salaryIsConfidential", "salary_confidential"]
@@ -328,3 +332,125 @@ class JobDataMapper:
                 return None
 
         return None
+
+    def _extract_salary_data(
+        self, raw: dict[str, Any]
+    ) -> tuple[float | None, float | None, str | None]:
+        """
+        Extract salary information from flexible formats.
+
+        Handles both object format: {"value": 145000, "currency": "USD"}
+        and flat format: 150000
+
+        If only one salary value is found, it's used as min_salary.
+
+        Returns:
+            Tuple of (salary_min, salary_max, base_salary_string)
+        """
+        salary_min = None
+        salary_max = None
+        base_salary = None
+
+        # Check for salary field in various formats
+        salary_data = raw.get("salary")
+
+        if salary_data is not None:
+            if isinstance(salary_data, dict):
+                # Object format: {"value": 145000, "currency": "USD", "unit": "hourly"}
+                value = salary_data.get("value")
+                currency = salary_data.get("currency", "")
+                unit = salary_data.get("unit", "")
+
+                if value is not None:
+                    try:
+                        salary_value = float(value)
+                        # Use single value as min_salary as requested
+                        salary_min = salary_value
+
+                        # Build base salary string with currency and unit info
+                        base_salary_parts = [str(salary_value)]
+                        if currency:
+                            base_salary_parts.append(currency)
+                        if unit:
+                            base_salary_parts.append(f"per {unit}")
+                        base_salary = " ".join(base_salary_parts)
+
+                    except (ValueError, TypeError):
+                        logger.warning(f"Could not parse salary value: {value}")
+
+                # Check for min/max in salary object
+                if "min" in salary_data or "minimum" in salary_data:
+                    min_val = salary_data.get("min") or salary_data.get("minimum")
+                    if min_val is not None:
+                        try:
+                            salary_min = float(min_val)
+                        except (ValueError, TypeError):
+                            pass
+
+                if "max" in salary_data or "maximum" in salary_data:
+                    max_val = salary_data.get("max") or salary_data.get("maximum")
+                    if max_val is not None:
+                        try:
+                            salary_max = float(max_val)
+                        except (ValueError, TypeError):
+                            pass
+
+                # Build base salary string for min/max case
+                if (salary_min is not None or salary_max is not None) and base_salary is None:
+                    base_salary_parts = []
+                    if salary_min is not None:
+                        base_salary_parts.append(f"${salary_min}")
+                    if salary_max is not None:
+                        if salary_min is not None:
+                            base_salary_parts.append(f" - ${salary_max}")
+                        else:
+                            base_salary_parts.append(f"up to ${salary_max}")
+                    if currency:
+                        base_salary_parts.append(currency)
+                    base_salary = " ".join(base_salary_parts)
+
+            elif isinstance(salary_data, int | float):
+                # Flat format: 150000
+                salary_min = float(salary_data)
+                base_salary = str(salary_data)
+
+            elif isinstance(salary_data, str):
+                # String format: "150000" or "150k"
+                try:
+                    # Handle common formats like "150k", "150000"
+                    clean_salary = salary_data.replace(",", "").replace("$", "").strip()
+                    if clean_salary.lower().endswith("k"):
+                        salary_value = float(clean_salary[:-1]) * 1000
+                    else:
+                        salary_value = float(clean_salary)
+
+                    salary_min = salary_value
+                    base_salary = salary_data
+
+                except (ValueError, TypeError):
+                    logger.warning(f"Could not parse salary string: {salary_data}")
+
+        # Also check for salary_range, compensation, pay, etc.
+        if not salary_min and not salary_max:
+            # Try other common salary field names
+            for field_name in ["compensation", "pay", "wage", "salary_range"]:
+                field_data = raw.get(field_name)
+                if field_data is not None:
+                    if isinstance(field_data, int | float):
+                        salary_min = float(field_data)
+                        base_salary = str(field_data)
+                        break
+                    elif isinstance(field_data, str):
+                        try:
+                            clean_val = field_data.replace(",", "").replace("$", "").strip()
+                            if clean_val.lower().endswith("k"):
+                                salary_value = float(clean_val[:-1]) * 1000
+                            else:
+                                salary_value = float(clean_val)
+                            salary_min = salary_value
+                            base_salary = field_data
+                            break
+                        except (ValueError, TypeError):
+                            continue
+
+        return salary_min, salary_max, base_salary

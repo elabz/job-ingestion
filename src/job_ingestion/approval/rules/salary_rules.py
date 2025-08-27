@@ -5,7 +5,7 @@ from typing import Any
 from .base import ApprovalRule
 
 # Thresholds/constants kept simple for now; easy to tune later.
-MIN_SALARY_THRESHOLD: int = 30_000
+MIN_SALARY_THRESHOLD: int = 100_000
 
 
 def min_salary_at_least_threshold(job: dict[str, Any]) -> tuple[bool, str | None]:

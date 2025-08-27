@@ -3,7 +3,12 @@ from __future__ import annotations
 from typing import Any
 
 from job_ingestion.approval.engine import ApprovalEngine
-from job_ingestion.approval.rules import content_rules, location_rules, salary_rules
+from job_ingestion.approval.rules import (
+    content_rules,
+    employment_type_rules,
+    location_rules,
+    salary_rules,
+)
 from job_ingestion.approval.rules.base import ApprovalRule
 
 
@@ -117,12 +122,53 @@ def test_content_rules_pass_fail() -> None:
     assert ok is False and "Description too short" in (reason or "")
 
 
+def test_employment_type_rules_pass_fail() -> None:
+    """Test employment type approval rules."""
+    rules = employment_type_rules.get_rules()
+    # mypy/type-check: ensure protocol compatibility
+    for r in rules:
+        assert callable(r)
+
+    employment_rule: ApprovalRule = rules[0]
+
+    # Test valid full-time variations
+    ok, reason = employment_rule({"employment_type": "Full-Time"})
+    assert ok is True and reason is None
+
+    ok, reason = employment_rule({"employment_type": "full-time"})
+    assert ok is True and reason is None
+
+    ok, reason = employment_rule({"employment_type": "FULL-TIME"})
+    assert ok is True and reason is None
+
+    ok, reason = employment_rule({"employment_type": "Full Time"})
+    assert ok is True and reason is None
+
+    ok, reason = employment_rule({"employment_type": "full time"})
+    assert ok is True and reason is None
+
+    # Test invalid employment types
+    ok, reason = employment_rule({"employment_type": "Internship"})
+    assert ok is False and "Job must be a full-time position, got: Internship" in (reason or "")
+
+    ok, reason = employment_rule({"employment_type": "Contract"})
+    assert ok is False and "Job must be a full-time position, got: Contract" in (reason or "")
+
+    ok, reason = employment_rule({"employment_type": "Part-Time"})
+    assert ok is False and "Job must be a full-time position, got: Part-Time" in (reason or "")
+
+    # Test missing employment type
+    ok, reason = employment_rule({})
+    assert ok is False and "Job must be a full-time position, got: None" in (reason or "")
+
+
 def test_engine_with_all_rules() -> None:
     engine = ApprovalEngine(
         [
             *salary_rules.get_rules(),
             *location_rules.get_rules(),
             *content_rules.get_rules(),
+            *employment_type_rules.get_rules(),
         ]
     )
 
@@ -131,6 +177,7 @@ def test_engine_with_all_rules() -> None:
         "location": "Berlin, DE",
         "title": "Backend Engineer",
         "description": "This is a long enough description to pass the content rule.",
+        "employment_type": "Full-Time",
     }
     decision_ok = engine.evaluate_job(passing_job)
     assert decision_ok.approved is True
