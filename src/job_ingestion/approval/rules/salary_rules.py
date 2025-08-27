@@ -8,6 +8,9 @@ from .base import ApprovalRule
 MIN_ANNUAL_SALARY_USD: float = 100_000.0
 MIN_HOURLY_RATE_USD: float = 45.0
 
+# Backward compatibility alias for tests
+MIN_SALARY_THRESHOLD = MIN_ANNUAL_SALARY_USD
+
 # Currency conversion rates (approximate, could be made dynamic)
 CURRENCY_TO_USD_RATES = {
     "USD": 1.0,

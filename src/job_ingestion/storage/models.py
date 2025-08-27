@@ -28,7 +28,7 @@ class Job(Base):
 
     # Primary fields
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    external_id: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
+    external_id: Mapped[str | None] = mapped_column(String, unique=True, nullable=True, index=True)
     title: Mapped[str] = mapped_column(String, nullable=False)
     approval_status: Mapped[ApprovalStatus] = mapped_column(
         SAEnum(ApprovalStatus),
@@ -116,7 +116,7 @@ class RejectedJob(Base):
     # Primary fields
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     rejection_reasons: Mapped[str] = mapped_column(Text, nullable=False)
-    external_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    external_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     title: Mapped[str] = mapped_column(String, nullable=False)
 
     # All the same fields as Job (except approval_status)

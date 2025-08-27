@@ -252,15 +252,13 @@ class JobDataMapper:
         return json_data
 
     # Helper methods
-    def _get_external_id(self, raw: dict[str, Any]) -> str:
+    def _get_external_id(self, raw: dict[str, Any]) -> str | None:
         """Extract external ID with fallbacks."""
         ext_id = raw.get("jobId") or raw.get("id") or raw.get("external_id")
         if ext_id:
             return str(ext_id)
-        # Generate a unique ID based on available data
-        title = self._get_title(raw)
-        company = raw.get("companyName", "unknown")
-        return f"{company}_{title}".replace(" ", "_").lower()[:100]
+        # Return None if no external_id is present to insert null in database
+        return None
 
     def _get_title(self, raw: dict[str, Any]) -> str:
         """Extract job title with fallbacks."""

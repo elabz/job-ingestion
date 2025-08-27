@@ -22,14 +22,14 @@ def test_salary_rules_pass_fail() -> None:
 
     min_rule: ApprovalRule = rules[0]
 
-    ok, reason = min_rule({"min_salary": salary_rules.MIN_SALARY_THRESHOLD})
+    ok, reason = min_rule({"salary_min": salary_rules.MIN_SALARY_THRESHOLD})
     assert ok is True and reason is None
 
-    ok, reason = min_rule({"min_salary": salary_rules.MIN_SALARY_THRESHOLD - 1})
-    assert ok is False and "Min salary below" in (reason or "")
+    ok, reason = min_rule({"salary_min": salary_rules.MIN_SALARY_THRESHOLD - 1})
+    assert ok is False and "Annual salary below" in (reason or "")
 
-    ok, reason = min_rule({"min_salary": "not-a-number"})
-    assert ok is False and "Min salary below" in (reason or "")
+    ok, reason = min_rule({"salary_min": "not-a-number"})
+    assert ok is False and "No valid salary information found" in (reason or "")
 
 
 def test_location_rules_pass_fail() -> None:
@@ -294,7 +294,7 @@ def test_engine_with_all_rules() -> None:
     )
 
     passing_job: dict[str, Any] = {
-        "min_salary": salary_rules.MIN_SALARY_THRESHOLD + 5_000,
+        "salary_min": salary_rules.MIN_SALARY_THRESHOLD + 5_000,
         "location": "New York, NY, USA",
         "title": "Backend Engineer",
         "description": "This is a long enough description to pass the content rule.",
@@ -306,7 +306,7 @@ def test_engine_with_all_rules() -> None:
     assert decision_ok.reasons == []
 
     failing_job: dict[str, Any] = {
-        "min_salary": 10_000,  # below threshold
+        "salary_min": 10_000,  # below threshold
         # missing location and remote flag
         "title": "",
         "description": "short",
