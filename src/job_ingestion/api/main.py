@@ -39,7 +39,7 @@ def health() -> dict[str, str]:
 
 def on_startup() -> None:
     # Minimal startup log to verify logging is configured
-    logger.info("app.startup")
+    logger.info("app.startup", message="Live reload test - modified")
 
 
 # Register startup event handler without using untyped decorator

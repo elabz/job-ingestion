@@ -13,6 +13,9 @@ from job_ingestion.api.models import (
     SingleJobPostingRequest,
 )
 from job_ingestion.ingestion.service import IngestionService
+from job_ingestion.utils.logging import get_logger
+
+logger = get_logger("api.routes")
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -113,7 +116,7 @@ def jobposting_example() -> JobPosting:
     status_code=202,
 )
 def ingest(
-    payload: IngestBatchRequest | SingleJobPostingRequest = INGEST_REQUEST_BODY,
+    payload: dict[str, Any] = INGEST_REQUEST_BODY,
 ) -> IngestResponse:
     """Accept a single job or a batch and return a processing id.
 
@@ -126,14 +129,20 @@ def ingest(
     """
 
     try:
-        if isinstance(payload, IngestBatchRequest):
-            jobs: list[dict[str, Any]] = payload.jobs
+        # Manually discriminate between batch and single job based on presence of 'jobs' key
+        if "jobs" in payload:
+            # Batch request
+            batch_payload = IngestBatchRequest(**payload)
+            jobs: list[dict[str, Any]] = batch_payload.jobs
         else:
-            # Single payload -> normalize to a one-item list
-            jobs = [payload.dict()]
+            # Single job request
+            single_payload = SingleJobPostingRequest(**payload)
+            jobs = [single_payload.dict()]
 
+        logger.info("api.ingest_request", job_count=len(jobs))
         service = IngestionService()
         batch_id = service.ingest_batch(jobs)
+        logger.info("api.ingest_completed", processing_id=batch_id)
         # Best effort to coerce into UUID; fallback to new UUID if invalid
         processing_id: UUID
         try:
@@ -147,6 +156,7 @@ def ingest(
             estimated_completion=None,
         )
     except Exception as exc:  # pragma: no cover - generic safety net
+        logger.exception("api.ingest_error", error=str(exc))
         raise HTTPException(status_code=500, detail="Internal Server Error") from exc
 
 

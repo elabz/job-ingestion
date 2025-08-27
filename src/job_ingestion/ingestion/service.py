@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
@@ -16,8 +15,9 @@ from job_ingestion.storage.repositories import get_engine, get_session, get_sess
 from job_ingestion.transformation.normalizers import LocationNormalizer, SalaryNormalizer
 from job_ingestion.utils import metrics
 from job_ingestion.utils.config import get_settings
+from job_ingestion.utils.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger("ingestion.service")
 
 
 class IngestionService:
@@ -61,9 +61,7 @@ class IngestionService:
             "finished_at": None,
         }
 
-        logger.info(
-            "ingest_batch started", extra={"processing_id": processing_id, "total": len(jobs_data)}
-        )
+        logger.info("ingest.batch_started", processing_id=processing_id, total=len(jobs_data))
         metrics.increment("ingest.batch_started")
 
         # Detect schema (heuristic placeholder)
@@ -128,35 +126,30 @@ class IngestionService:
                     status["rejected"] += 1
                     metrics.increment("ingest.item_rejected")
 
-                logger.debug(
-                    "ingested item",
-                    extra={
-                        "processing_id": processing_id,
-                        "index": idx,
-                        "external_id": external_id,
-                        "approved": decision.approved,
-                        "reasons": decision.reasons,
-                    },
+                logger.info(
+                    "ingest.item",
+                    processing_id=processing_id,
+                    index=idx,
+                    external_id=external_id,
+                    approved=decision.approved,
+                    reasons=decision.reasons,
                 )
             except Exception as exc:  # keep processing on errors
                 status["errors"] += 1
                 metrics.increment("ingest.item_error")
                 logger.exception(
-                    "error ingesting item",
-                    extra={"processing_id": processing_id, "index": idx, "error": str(exc)},
+                    "ingest.item_error", processing_id=processing_id, index=idx, error=str(exc)
                 )
 
         status["finished_at"] = datetime.utcnow()
         metrics.increment("ingest.batch_finished")
         logger.info(
-            "ingest_batch finished",
-            extra={
-                "processing_id": processing_id,
-                "processed": status["processed"],
-                "approved": status["approved"],
-                "rejected": status["rejected"],
-                "errors": status["errors"],
-            },
+            "ingest.batch_finished",
+            processing_id=processing_id,
+            processed=status["processed"],
+            approved=status["approved"],
+            rejected=status["rejected"],
+            errors=status["errors"],
         )
 
         return processing_id
