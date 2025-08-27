@@ -45,6 +45,8 @@ class Job(Base):
     estimated_salary_min: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
     estimated_salary_max: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
     base_salary: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    salary_currency: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    salary_unit: Mapped[str | None] = mapped_column(String(20), nullable=True)
     is_salary_estimate: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     is_salary_confidential: Mapped[bool] = mapped_column(Boolean, default=False)
 
@@ -123,6 +125,8 @@ class RejectedJob(Base):
     estimated_salary_min: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
     estimated_salary_max: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
     base_salary: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    salary_currency: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    salary_unit: Mapped[str | None] = mapped_column(String(20), nullable=True)
     is_salary_estimate: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     is_salary_confidential: Mapped[bool] = mapped_column(Boolean, default=False)
 

@@ -8,7 +8,7 @@ in structure) to the standardized database schema with comprehensive job propert
 from datetime import datetime
 from typing import Any
 
-from dateutil import parser as date_parser  # type: ignore[import-untyped]
+from dateutil import parser as date_parser
 
 from job_ingestion.utils.logging import get_logger
 
@@ -75,7 +75,7 @@ class JobDataMapper:
     def _map_salary_info(self, raw: dict[str, Any]) -> dict[str, Any]:
         """Map salary and compensation information."""
         # Extract salary information with flexible parsing
-        salary_min, salary_max, base_salary = self._extract_salary_data(raw)
+        salary_min, salary_max, base_salary, currency, unit = self._extract_salary_data(raw)
 
         return {
             "salary_min": salary_min
@@ -94,6 +94,10 @@ class JobDataMapper:
             ),
             "base_salary": base_salary
             or self._safe_get_string(raw, ["baseSalary", "base_salary", "salary_range"]),
+            "salary_currency": currency
+            or self._safe_get_string(raw, ["currency", "salary_currency"]),
+            "salary_unit": unit
+            or self._safe_get_string(raw, ["unit", "salary_unit", "pay_period"]),
             "is_salary_estimate": self._safe_get_bool(raw, ["isLaddersEstimate", "is_estimate"]),
             "is_salary_confidential": self._safe_get_bool(
                 raw, ["salaryIsConfidential", "salary_confidential"]
@@ -335,21 +339,23 @@ class JobDataMapper:
 
     def _extract_salary_data(
         self, raw: dict[str, Any]
-    ) -> tuple[float | None, float | None, str | None]:
+    ) -> tuple[float | None, float | None, str | None, str | None, str | None]:
         """
         Extract salary information from flexible formats.
 
-        Handles both object format: {"value": 145000, "currency": "USD"}
+        Handles both object format: {"value": 145000, "currency": "USD", "unit": "hourly"}
         and flat format: 150000
 
         If only one salary value is found, it's used as min_salary.
 
         Returns:
-            Tuple of (salary_min, salary_max, base_salary_string)
+            Tuple of (salary_min, salary_max, base_salary_string, currency, unit)
         """
         salary_min = None
         salary_max = None
         base_salary = None
+        currency = None
+        unit = None
 
         # Check for salary field in various formats
         salary_data = raw.get("salary")
@@ -360,6 +366,16 @@ class JobDataMapper:
                 value = salary_data.get("value")
                 currency = salary_data.get("currency", "")
                 unit = salary_data.get("unit", "")
+
+                # Set defaults if not provided
+                if not currency:
+                    currency = "USD"
+                if not unit:
+                    # Infer unit based on value if not explicitly provided
+                    if value and value < 200:
+                        unit = "hourly"
+                    else:
+                        unit = "annual"
 
                 if value is not None:
                     try:
@@ -413,6 +429,12 @@ class JobDataMapper:
                 # Flat format: 150000
                 salary_min = float(salary_data)
                 base_salary = str(salary_data)
+                # For flat format, we need to infer if it's hourly or annual
+                # Values under 200 are likely hourly, above are likely annual
+                if salary_data < 200:
+                    unit = "hourly"
+                else:
+                    unit = "annual"
 
             elif isinstance(salary_data, str):
                 # String format: "150000" or "150k"
@@ -426,6 +448,11 @@ class JobDataMapper:
 
                     salary_min = salary_value
                     base_salary = salary_data
+                    # For string format, infer unit based on value
+                    if salary_value < 200:
+                        unit = "hourly"
+                    else:
+                        unit = "annual"
 
                 except (ValueError, TypeError):
                     logger.warning(f"Could not parse salary string: {salary_data}")
@@ -449,8 +476,13 @@ class JobDataMapper:
                                 salary_value = float(clean_val)
                             salary_min = salary_value
                             base_salary = field_data
+                            # Infer unit based on value
+                            if salary_value < 200:
+                                unit = "hourly"
+                            else:
+                                unit = "annual"
                             break
                         except (ValueError, TypeError):
                             continue
 
-        return salary_min, salary_max, base_salary
+        return salary_min, salary_max, base_salary, currency, unit

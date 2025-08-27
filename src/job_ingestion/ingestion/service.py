@@ -106,7 +106,9 @@ class IngestionService:
                     "title": mapped_data.get("title", "(untitled)"),
                     "description": mapped_data.get("short_description")
                     or mapped_data.get("full_description", ""),
-                    "min_salary": mapped_data.get("salary_min"),
+                    "salary_min": mapped_data.get("salary_min"),
+                    "salary_currency": mapped_data.get("salary_currency"),
+                    "salary_unit": mapped_data.get("salary_unit"),
                     "location": mapped_data.get("primary_location"),
                     "employment_type": raw.get("employment_type"),
                     "company_type": raw.get("company_type"),
